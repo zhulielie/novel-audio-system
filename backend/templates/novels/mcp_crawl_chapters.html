@@ -1,0 +1,399 @@
+{% extends 'base/base.html' %}
+
+{% block title %}MCP爬取新章节 - {{ novel.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0">
+                            <i class="fas fa-spider me-2"></i>
+                            MCP爬取新章节
+                        </h4>
+                        <small class="text-white-50">
+                            使用MCP Chrome工具从网站爬取新章节并添加到数据库
+                        </small>
+                    </div>
+                    <div>
+                        <a href="{% url 'novels:novel_detail' novel.id %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i>返回小说详情
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <!-- 功能说明 -->
+                <div class="alert alert-warning" role="alert">
+                    <h5><i class="fas fa-exclamation-triangle me-2"></i>重要提醒</h5>
+                    <ul class="mb-0">
+                        <li>此功能会使用MCP Chrome工具访问河图书网站</li>
+                        <li>请确保您的系统已正确配置MCP工具</li>
+                        <li>爬取过程中请勿关闭浏览器窗口</li>
+                        <li>建议在非高峰时段进行爬取，避免对网站造成过大压力</li>
+                    </ul>
+                </div>
+
+                <!-- 爬取选项 -->
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <h5><i class="fas fa-cog me-2"></i>爬取选项</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="autoCreate" checked>
+                                    <label class="form-check-label" for="autoCreate">
+                                        <strong>自动创建章节</strong>
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="updateContent" checked>
+                                    <label class="form-check-label" for="updateContent">
+                                        获取章节内容
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="skipDuplicates" checked>
+                                    <label class="form-check-label" for="skipDuplicates">
+                                        跳过重复章节
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="updateVolumeInfo" checked>
+                                    <label class="form-check-label" for="updateVolumeInfo">
+                                        更新卷信息
+                                    </label>
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="preserveOrder" checked>
+                                    <label class="form-check-label" for="preserveOrder">
+                                        保持章节顺序
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="dryRun" >
+                                    <label class="form-check-label" for="dryRun">
+                                        仅预览（不实际创建）
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button id="crawlNewBtn" class="btn btn-primary btn-lg">
+                            <i class="fas fa-spider me-2"></i>
+                            开始爬取
+                        </button>
+                        <button id="stopCrawlBtn" class="btn btn-danger btn-lg" style="display: none;">
+                            <i class="fas fa-stop me-2"></i>
+                            停止爬取
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 当前小说信息 -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6><i class="fas fa-info-circle me-2"></i>当前小说信息</h6>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <strong>小说标题：</strong>{{ novel.title }}
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>作者：</strong>{{ novel.author|default:"未知" }}
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>当前章节数：</strong>
+                                        <span class="badge bg-primary">{{ chapters|length }}</span>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <strong>最后更新：</strong>
+                                        <span title="{{ novel.updated_at|date:'Y-m-d H:i:s' }}">
+                                            {{ novel.updated_at|timesince }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 爬取结果显示区域 -->
+                <div id="crawlResults" style="display: none;">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-line me-2"></i>
+                                爬取进度
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <div class="h3 text-success" id="createdCount">0</div>
+                                        <small class="text-muted">已创建章节</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <div class="h3 text-warning" id="skippedCount">0</div>
+                                        <small class="text-muted">跳过重复</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <div class="h3 text-info" id="crawlProgress">0%</div>
+                                        <small class="text-muted">爬取进度</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <div class="h3 text-primary" id="crawlTimeElapsed">0秒</div>
+                                        <small class="text-muted">耗时</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="progress mt-3" style="height: 10px;">
+                                <div class="progress-bar bg-info" id="crawlProgressBar" style="width: 0%"></div>
+                            </div>
+
+                            <!-- 状态信息 -->
+                            <div class="mt-3">
+                                <div class="alert alert-secondary" id="crawlStatus">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    准备开始爬取...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 新章节预览区域 -->
+                <div id="previewSection" style="display: none;">
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-eye me-2"></i>
+                                新章节预览
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="previewTable">
+                                    <thead>
+                                        <tr>
+                                            <th width="80">序号</th>
+                                            <th>章节标题</th>
+                                            <th width="150">卷信息</th>
+                                            <th width="120">状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="previewTableBody">
+                                        <!-- 预览数据将通过JavaScript动态添加 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 确认爬取对话框 -->
+<div class="modal fade" id="confirmCrawlModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-spider me-2"></i>
+                    确认爬取
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>确定要开始爬取新章节吗？</p>
+                <p class="text-muted small">
+                    此操作将使用MCP Chrome工具访问网站并下载新章节数据。
+                    爬取过程中请勿关闭浏览器窗口。
+                </p>
+                <div class="alert alert-warning">
+                    <strong>注意：</strong>请确保已正确配置MCP工具，否则爬取将失败。
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="confirmCrawlBtn">开始爬取</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    let crawlStartTime;
+    let isCrawling = false;
+
+    // 开始爬取按钮
+    $('#crawlNewBtn').on('click', function() {
+        if (isCrawling) {
+            return;
+        }
+
+        $('#confirmCrawlModal').modal('show');
+    });
+
+    // 停止爬取按钮
+    $('#stopCrawlBtn').on('click', function() {
+        if (isCrawling) {
+            stopCrawling();
+        }
+    });
+
+    // 确认爬取
+    $('#confirmCrawlBtn').on('click', function() {
+        $('#confirmCrawlModal').modal('hide');
+        startCrawling();
+    });
+
+    function startCrawling() {
+        isCrawling = true;
+        crawlStartTime = Date.now();
+
+        // 显示结果区域
+        $('#crawlResults').show();
+
+        // 更新UI
+        $('#crawlNewBtn').hide();
+        $('#stopCrawlBtn').show().prop('disabled', false);
+
+        // 重置进度
+        resetCrawlProgress();
+
+        // 更新状态
+        updateCrawlStatus('正在连接MCP Chrome工具...', 'info');
+
+        // 准备数据
+        const options = {
+            autoCreate: $('#autoCreate').prop('checked'),
+            updateContent: $('#updateContent').prop('checked'),
+            skipDuplicates: $('#skipDuplicates').prop('checked'),
+            updateVolumeInfo: $('#updateVolumeInfo').prop('checked'),
+            preserveOrder: $('#preserveOrder').prop('checked'),
+            dryRun: $('#dryRun').prop('checked')
+        };
+
+        // 发送爬取请求
+        performCrawl(options);
+    }
+
+    function performCrawl(options) {
+        updateCrawlStatus('正在获取网站章节列表...', 'info');
+
+        fetch('{% url "novels:mcp_crawl_chapters" novel.id %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(options)
+        })
+        .then(response => response.json())
+        .then(data => {
+            handleCrawlResponse(data);
+        })
+        .catch(error => {
+            console.error('爬取请求失败:', error);
+            updateCrawlStatus('爬取请求失败: ' + error.message, 'error');
+            stopCrawling();
+        });
+    }
+
+    function handleCrawlResponse(data) {
+        if (data.success) {
+            updateCrawlStatus('爬取完成: ' + data.message, 'success');
+
+            // 更新进度
+            updateCrawlProgress({
+                createdCount: parseInt(data.createdCount) || 0,
+                skippedCount: parseInt(data.skippedCount) || 0,
+                progress: 100
+            });
+
+            // 延迟刷新页面
+            setTimeout(() => {
+                location.reload();
+            }, 3000);
+        } else {
+            updateCrawlStatus('爬取失败: ' + data.message, 'error');
+        }
+
+        stopCrawling();
+    }
+
+    function stopCrawling() {
+        isCrawling = false;
+        $('#crawlNewBtn').show();
+        $('#stopCrawlBtn').hide();
+    }
+
+    function resetCrawlProgress() {
+        $('#createdCount').text('0');
+        $('#skippedCount').text('0');
+        $('#crawlProgress').text('0%');
+        $('#crawlTimeElapsed').text('0秒');
+        $('#crawlProgressBar').css('width', '0%');
+    }
+
+    function updateCrawlProgress(data) {
+        $('#createdCount').text(data.createdCount || 0);
+        $('#skippedCount').text(data.skippedCount || 0);
+        $('#crawlProgress').text((data.progress || 0) + '%');
+        $('#crawlProgressBar').css('width', (data.progress || 0) + '%');
+
+        if (crawlStartTime) {
+            const elapsed = Math.round((Date.now() - crawlStartTime) / 1000);
+            $('#crawlTimeElapsed').text(elapsed + '秒');
+        }
+    }
+
+    function updateCrawlStatus(message, type = 'info') {
+        const alertClass = {
+            'info': 'alert-info',
+            'success': 'alert-success',
+            'warning': 'alert-warning',
+            'error': 'alert-danger'
+        }[type] || 'alert-info';
+
+        const iconClass = {
+            'info': 'fa-info-circle',
+            'success': 'fa-check-circle',
+            'warning': 'fa-exclamation-triangle',
+            'error': 'fa-exclamation-circle'
+        }[type] || 'fa-info-circle';
+
+        $('#crawlStatus').removeClass('alert-info alert-success alert-warning alert-danger')
+            .addClass(alertClass)
+            .html(`<i class="fas ${iconClass} me-2"></i>${message}`);
+    }
+
+    // 页面离开时的处理
+    $(window).on('beforeunload', function() {
+        if (isCrawling) {
+            return '爬取正在进行中，确定要离开吗？';
+        }
+    });
+});
+</script>
+{% endblock %}

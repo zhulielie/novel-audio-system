@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小说爬虫管理系统</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 25px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+        
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            transform: scale(1.2);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
+        }
+        
+        .relations-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .relation-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .relation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .relation-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        
+        .relation-info {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .relation-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: #888;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.2em;
+        }
+        
+        .error {
+            background: #ffe6e6;
+            color: #d63031;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #d63031;
+        }
+        
+        .success {
+            background: #e6ffe6;
+            color: #00b894;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #00b894;
+        }
+        
+        .progress {
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 20px;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .relations-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="header">
+                <h1>🕷️ 小说爬虫管理系统</h1>
+                <p>基于Vue + Django REST API的现代化爬虫管理界面</p>
+            </div>
+            
+            <div class="main-content">
+                <!-- 统计信息 -->
+                <div class="section">
+                    <h2>📊 系统统计</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number">{{ stats.total_relations ? stats.total_relations : 0 }}</div>
+                            <div class="stat-label">总关系数</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">{{ stats.active_relations ? stats.active_relations : 0 }}</div>
+                            <div class="stat-label">活跃关系</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">{{ stats.recent_synced ? stats.recent_synced : 0 }}</div>
+                            <div class="stat-label">近期同步</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">{{ stats.supported_sites ? stats.supported_sites.length : 0 }}</div>
+                            <div class="stat-label">支持站点</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 高级爬取配置 -->
+                <div class="section">
+                    <h2>⚙️ 高级爬取配置</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <div class="form-group">
+                            <label>最大章节数 (0=无限制)</label>
+                            <input type="number" v-model="crawlConfig.max_chapters" min="0" placeholder="如：100">
+                        </div>
+                        <div class="form-group">
+                            <label>起始章节</label>
+                            <input type="number" v-model="crawlConfig.start_chapter" min="1" placeholder="如：1">
+                        </div>
+                        <div class="form-group">
+                            <label>请求延迟 (秒)</label>
+                            <input type="number" v-model="crawlConfig.delay_between_requests" min="0" step="0.1" placeholder="如：1.0">
+                        </div>
+                        <div class="form-group">
+                            <label>重试次数</label>
+                            <input type="number" v-model="crawlConfig.retry_count" min="1" placeholder="如：3">
+                        </div>
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" v-model="crawlConfig.overwrite_existing" id="overwrite">
+                                <label for="overwrite">覆盖现有章节</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 错误和成功消息 -->
+                <div v-if="error" class="error">
+                    <strong>❌ 错误：</strong> {{ error }}
+                </div>
+                
+                <div v-if="success" class="success">
+                    <strong>✅ 成功：</strong> {{ success }}
+                </div>
+                
+                <!-- 进度条 -->
+                <div v-if="isLoading" class="progress">
+                    <div class="progress-bar" :style="{width: progress + '%'}">
+                        {{ progress }}% - {{ loadingMessage }}
+                    </div>
+                </div>
+                
+                <!-- 小说来源关系列表 -->
+                <div class="section">
+                    <h2>📚 小说来源关系</h2>
+                    <div style="margin-bottom: 20px;">
+                        <button class="btn" @click="loadRelations" :disabled="isLoading">
+                            🔄 刷新列表
+                        </button>
+                        <button class="btn btn-secondary" @click="loadStats" :disabled="isLoading">
+                            📊 更新统计
+                        </button>
+                    </div>
+                    
+                    <div v-if="isLoading && relations.length === 0" class="loading">
+                        🔄 正在加载数据...
+                    </div>
+                    
+                    <div v-else-if="relations.length === 0" class="loading">
+                        📭 暂无数据，请先添加小说来源关系
+                    </div>
+                    
+                    <div v-else class="relations-list">
+                        <div v-for="relation in relations" :key="relation.id" class="relation-card">
+                            <h3>{{ relation.novel?.title ? relation.novel.title : '未知小说' }}</h3>
+                            <div class="relation-info">
+                                <div><strong>来源：</strong> {{ relation.source?.name ? relation.source.name : '未知来源' }}</div>
+                                <div><strong>URL：</strong> 
+                                    <a :href="relation.source_url" target="_blank" style="color: #667eea; text-decoration: none;">
+                                        {{ relation.source_url?.substring(0, 50) }}{{ relation.source_url?.length > 50 ? '...' : '' }}
+                                    </a>
+                                </div>
+                                <div><strong>主要来源：</strong> {{ relation.is_primary ? '是' : '否' }}</div>
+                            </div>
+                            <div class="relation-stats">
+                                <span>📖 章节: {{ relation.chapter_count ? relation.chapter_count : 0 }}</span>
+                                <span>🔄 同步: {{ relation.sync_count ? relation.sync_count : 0 }}</span>
+                                <span>⏰ {{ formatDate(relation.last_sync_at) }}</span>
+                            </div>
+                            <div>
+                                <button class="btn" @click="crawlBasic(relation.id)" :disabled="isLoading">
+                                    🚀 基础爬取
+                                </button>
+                                <button class="btn btn-secondary" @click="crawlAdvanced(relation.id)" :disabled="isLoading">
+                                    ⚙️ 高级爬取
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    relations: [],
+                    stats: {},
+                    isLoading: false,
+                    error: null,
+                    success: null,
+                    progress: 0,
+                    loadingMessage: '',
+                    crawlConfig: {
+                        max_chapters: 0,
+                        start_chapter: 1,
+                        overwrite_existing: false,
+                        delay_between_requests: 1.0,
+                        retry_count: 3
+                    }
+                }
+            },
+            
+            mounted() {
+                this.loadRelations();
+                this.loadStats();
+            },
+            
+            methods: {
+                async loadRelations() {
+                    this.setLoading(true, '正在加载小说来源关系...');
+                    try {
+                        const response = await axios.get('/api/novel-source-relations/');
+                        this.relations = response.data.results || response.data;
+                        this.clearMessages();
+                    } catch (error) {
+                        this.showError('加载关系列表失败: ' + (error.response?.data?.message || error.message));
+                    } finally {
+                        this.setLoading(false);
+                    }
+                },
+                
+                async loadStats() {
+                    try {
+                        const response = await axios.get('/api/novel-source-relations/crawl_status/');
+                        this.stats = response.data;
+                    } catch (error) {
+                        console.error('加载统计失败:', error);
+                    }
+                },
+                
+                async crawlBasic(relationId) {
+                    this.setLoading(true, '正在执行基础爬取...');
+                    try {
+                        const response = await axios.post(`/api/novel-source-relations/${relationId}/crawl_basic/`);
+                        this.showSuccess(response.data.message);
+                        await this.loadRelations();
+                        await this.loadStats();
+                    } catch (error) {
+                        this.showError('基础爬取失败: ' + (error.response?.data?.message || error.message));
+                    } finally {
+                        this.setLoading(false);
+                    }
+                },
+                
+                async crawlAdvanced(relationId) {
+                    this.setLoading(true, '正在执行高级爬取...');
+                    try {
+                        const response = await axios.post(`/api/novel-source-relations/${relationId}/crawl_advanced/`, this.crawlConfig);
+                        this.showSuccess(response.data.message);
+                        if (response.data.details) {
+                            console.log('爬取详情:', response.data.details);
+                        }
+                        await this.loadRelations();
+                        await this.loadStats();
+                    } catch (error) {
+                        this.showError('高级爬取失败: ' + (error.response?.data?.message || error.message));
+                    } finally {
+                        this.setLoading(false);
+                    }
+                },
+                
+                setLoading(loading, message = '') {
+                    this.isLoading = loading;
+                    this.loadingMessage = message;
+                    if (loading) {
+                        this.progress = 0;
+                        this.animateProgress();
+                    }
+                },
+                
+                animateProgress() {
+                    if (this.isLoading && this.progress < 90) {
+                        this.progress += Math.random() * 10;
+                        setTimeout(() => this.animateProgress(), 200);
+                    }
+                },
+                
+                showError(message) {
+                    this.error = message;
+                    this.success = null;
+                    setTimeout(() => this.error = null, 5000);
+                },
+                
+                showSuccess(message) {
+                    this.success = message;
+                    this.error = null;
+                    setTimeout(() => this.success = null, 5000);
+                },
+                
+                clearMessages() {
+                    this.error = null;
+                    this.success = null;
+                },
+                
+                formatDate(dateString) {
+                    if (!dateString) return '从未';
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('zh-CN') + ' ' + date.toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit'});
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

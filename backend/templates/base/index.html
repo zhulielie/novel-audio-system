@@ -1,0 +1,309 @@
+{% extends 'base/base.html' %}
+
+{% block title %}首页 - 小说音频生成系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- 欢迎区域 -->
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <h1 class="display-4 mb-3">
+                    <i class="fas fa-magic text-primary me-3"></i>
+                    欢迎使用小说音频生成系统
+                </h1>
+                <p class="lead text-muted mb-4">
+                    基于AI技术的智能小说音频生成平台，让文字变成声音，让故事更加生动
+                </p>
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                            <a href="{% url 'novels:novel_list' %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-book me-2"></i>开始创作
+                            </a>
+                            <a href="{% url 'generators:workflow_list' %}" class="btn btn-success btn-lg">
+                                <i class="fas fa-play me-2"></i>生成音频
+                            </a>
+                            <a href="{% url 'generators:statistics' %}" class="btn btn-info btn-lg">
+                                <i class="fas fa-chart-line me-2"></i>查看统计
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 功能模块卡片 -->
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <div class="mb-3">
+                    <i class="fas fa-book fa-3x text-primary"></i>
+                </div>
+                <h5 class="card-title">小说管理</h5>
+                <p class="card-text text-muted">
+                    管理您的小说作品，支持章节导入、角色设定和标签分类
+                </p>
+                <div class="mt-auto">
+                    <a href="{% url 'novels:novel_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-right me-1"></i>进入管理
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <div class="mb-3">
+                    <i class="fas fa-music fa-3x text-success"></i>
+                </div>
+                <h5 class="card-title">音频管理</h5>
+                <p class="card-text text-muted">
+                    配置音频项目，管理情绪音频和语音模板
+                </p>
+                <div class="mt-auto">
+                    <a href="{% url 'audios:audio_project_list' %}" class="btn btn-outline-success">
+                        <i class="fas fa-arrow-right me-1"></i>进入管理
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <div class="mb-3">
+                    <i class="fas fa-robot fa-3x text-warning"></i>
+                </div>
+                <h5 class="card-title">LLM管理</h5>
+                <p class="card-text text-muted">
+                    配置大语言模型，管理API密钥和使用统计
+                </p>
+                <div class="mt-auto">
+                    <a href="{% url 'llms:llm_model_list' %}" class="btn btn-outline-warning">
+                        <i class="fas fa-arrow-right me-1"></i>进入管理
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card h-100 text-center">
+            <div class="card-body">
+                <div class="mb-3">
+                    <i class="fas fa-cogs fa-3x text-danger"></i>
+                </div>
+                <h5 class="card-title">生成管理</h5>
+                <p class="card-text text-muted">
+                    创建和管理生成工作流，监控任务执行状态
+                </p>
+                <div class="mt-auto">
+                    <a href="{% url 'generators:workflow_list' %}" class="btn btn-outline-danger">
+                        <i class="fas fa-arrow-right me-1"></i>进入管理
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 快速统计 -->
+    <div class="col-lg-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>系统概览
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 mb-3">
+                        <div class="border-end">
+                            <h3 class="text-primary mb-1">{{ total_novels|default:0 }}</h3>
+                            <small class="text-muted">小说总数</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border-end">
+                            <h3 class="text-success mb-1">{{ total_chapters|default:0 }}</h3>
+                            <small class="text-muted">章节总数</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="border-end">
+                            <h3 class="text-warning mb-1">{{ total_audio_projects|default:0 }}</h3>
+                            <small class="text-muted">音频项目</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <h3 class="text-danger mb-1">{{ total_workflows|default:0 }}</h3>
+                        <small class="text-muted">生成工作流</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 最近活动 -->
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>最近活动
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    {% if recent_activities %}
+                        {% for activity in recent_activities %}
+                        <div class="timeline-item mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-{{ activity.icon }} text-{{ activity.color }}"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">{{ activity.title }}</h6>
+                                    <p class="text-muted small mb-1">{{ activity.description }}</p>
+                                    <small class="text-muted">{{ activity.created_at|timesince }}前</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-inbox fa-2x mb-2"></i>
+                            <p class="mb-0">暂无最近活动</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 快速操作 -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>快速操作
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="d-grid">
+                            <a href="{% url 'novels:create_novel' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-plus me-2"></i>创建新小说
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="d-grid">
+                            <a href="{% url 'audios:create_project' %}" class="btn btn-outline-success">
+                                <i class="fas fa-plus me-2"></i>创建音频项目
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="d-grid">
+                            <a href="{% url 'generators:create_workflow' %}" class="btn btn-outline-warning">
+                                <i class="fas fa-plus me-2"></i>创建生成工作流
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="d-grid">
+                            <a href="{% url 'llms:create_model' %}" class="btn btn-outline-danger">
+                                <i class="fas fa-plus me-2"></i>添加LLM模型
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 使用指南模态框 -->
+<div class="modal fade" id="guideModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-question-circle me-2"></i>使用指南
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-book text-primary me-2"></i>第一步：准备小说</h6>
+                        <p class="text-muted">上传或创建您的小说，添加章节内容和角色信息。</p>
+                        
+                        <h6><i class="fas fa-music text-success me-2"></i>第二步：配置音频</h6>
+                        <p class="text-muted">创建音频项目，设置情绪音频和语音模板。</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-robot text-warning me-2"></i>第三步：配置LLM</h6>
+                        <p class="text-muted">添加大语言模型和API密钥，用于脚本生成。</p>
+                        
+                        <h6><i class="fas fa-cogs text-danger me-2"></i>第四步：生成音频</h6>
+                        <p class="text-muted">创建生成工作流，自动将小说转换为音频。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                <a href="{% url 'novels:novel_list' %}" class="btn btn-primary">开始使用</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 浮动帮助按钮 -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+    <button class="btn btn-primary rounded-circle" data-bs-toggle="modal" data-bs-target="#guideModal" title="使用指南">
+        <i class="fas fa-question"></i>
+    </button>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .timeline-item {
+        position: relative;
+    }
+    
+    .timeline-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 8px;
+        top: 30px;
+        width: 2px;
+        height: calc(100% - 10px);
+        background-color: #e9ecef;
+    }
+    
+    .border-end {
+        border-right: 1px solid #e9ecef !important;
+    }
+    
+    @media (max-width: 768px) {
+        .border-end {
+            border-right: none !important;
+            border-bottom: 1px solid #e9ecef !important;
+            padding-bottom: 1rem;
+        }
+    }
+</style>
+{% endblock %}

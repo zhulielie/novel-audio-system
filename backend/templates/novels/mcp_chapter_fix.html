@@ -1,0 +1,352 @@
+{% extends 'base/base.html' %}
+
+{% block title %}MCP章节修复 - {{ novel.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0">
+                            <i class="fas fa-robot me-2"></i>
+                            MCP章节修复
+                        </h4>
+                        <small class="text-white-50">
+                            使用MCP Chrome工具从网站获取最新章节信息并修复数据库
+                        </small>
+                    </div>
+                    <div>
+                        <a href="{% url 'novels:novel_detail' novel.id %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i>返回小说详情
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <!-- 功能说明 -->
+                <div class="alert alert-info" role="alert">
+                    <h5><i class="fas fa-info-circle me-2"></i>功能说明</h5>
+                    <ul class="mb-0">
+                        <li>使用MCP Chrome工具访问河图书网站获取最新章节数据</li>
+                        <li>自动匹配并更新现有章节的标题、卷信息和内容</li>
+                        <li>支持批量选择需要修复的章节</li>
+                        <li>实时显示修复进度和结果</li>
+                    </ul>
+                </div>
+
+                <!-- 修复控制 -->
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <h5><i class="fas fa-tools me-2"></i>修复选项</h5>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="selectAll" checked>
+                            <label class="form-check-label" for="selectAll">
+                                <strong>全选所有章节</strong>
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="autoUpdateContent" checked>
+                            <label class="form-check-label" for="autoUpdateContent">
+                                自动更新章节内容
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="skipExisting" checked>
+                            <label class="form-check-label" for="skipExisting">
+                                跳过已正确识别的章节
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button id="fixSelectedBtn" class="btn btn-success btn-lg">
+                            <i class="fas fa-magic me-2"></i>
+                            修复选中章节
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 章节列表 -->
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th width="50">
+                                    <input type="checkbox" id="masterCheckbox" checked>
+                                </th>
+                                <th width="80">序号</th>
+                                <th>章节标题</th>
+                                <th width="150">卷信息</th>
+                                <th width="120">字数</th>
+                                <th width="150">状态</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for chapter in chapters %}
+                            <tr data-chapter-id="{{ chapter.id }}">
+                                <td>
+                                    <input type="checkbox" class="chapter-checkbox"
+                                           name="chapter_ids[]"
+                                           value="{{ chapter.id }}"
+                                           checked>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{ chapter.chapter_sort_number }}</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <strong>{{ chapter.title }}</strong>
+                                        <small class="text-muted">({{ chapter.chapter_number }})</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if chapter.volume %}
+                                        <span class="badge bg-info">{{ chapter.volume }}</span>
+                                    {% else %}
+                                        <span class="text-muted">无</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ chapter.word_count }}字</span>
+                                </td>
+                                <td>
+                                    <div class="chapter-status">
+                                        <span class="status-badge status-processing">
+                                            <i class="fas fa-clock me-1"></i>待处理
+                                        </span>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 修复结果显示区域 -->
+                <div id="fixResults" class="mt-4" style="display: none;">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-check-circle me-2"></i>
+                                修复结果
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <div class="h3 text-success" id="successCount">0</div>
+                                        <small class="text-muted">成功修复</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <div class="h3 text-danger" id="errorCount">0</div>
+                                        <small class="text-muted">处理失败</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <div class="h3 text-info" id="progressPercent">0%</div>
+                                        <small class="text-muted">完成进度</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        <div class="h3 text-primary" id="timeElapsed">0秒</div>
+                                        <small class="text-muted">耗时</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="progress mt-3" style="height: 10px;">
+                                <div class="progress-bar bg-success" id="progressBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 确认修复对话框 -->
+<div class="modal fade" id="confirmFixModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-question-circle me-2"></i>
+                    确认修复
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>确定要修复选中的 <span id="selectedCount" class="fw-bold text-primary">0</span> 个章节吗？</p>
+                <p class="text-muted small">此操作将使用MCP工具从网站获取最新数据并更新数据库。</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-success" id="confirmFixBtn">开始修复</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    let startTime;
+    let totalChapters = 0;
+
+    // 全选/取消全选
+    $('#selectAll, #masterCheckbox').on('change', function() {
+        const isChecked = $(this).prop('checked');
+        $('.chapter-checkbox').prop('checked', isChecked);
+        updateSelectedCount();
+    });
+
+    // 单个章节选择
+    $('.chapter-checkbox').on('change', function() {
+        updateSelectedCount();
+        updateMasterCheckbox();
+    });
+
+    function updateSelectedCount() {
+        const count = $('.chapter-checkbox:checked').length;
+        $('#selectedCount').text(count);
+    }
+
+    function updateMasterCheckbox() {
+        const total = $('.chapter-checkbox').length;
+        const checked = $('.chapter-checkbox:checked').length;
+        $('#masterCheckbox').prop('checked', checked === total);
+        $('#selectAll').prop('checked', checked === total);
+    }
+
+    // 开始修复按钮
+    $('#fixSelectedBtn').on('click', function() {
+        const selectedCount = $('.chapter-checkbox:checked').length;
+        if (selectedCount === 0) {
+            showNotification('请先选择要修复的章节', 'warning');
+            return;
+        }
+
+        $('#confirmFixModal').modal('show');
+        updateSelectedCount();
+    });
+
+    // 确认修复
+    $('#confirmFixBtn').on('click', function() {
+        $('#confirmFixModal').modal('hide');
+        startFixProcess();
+    });
+
+    function startFixProcess() {
+        const selectedChapters = $('.chapter-checkbox:checked').map(function() {
+            return $(this).val();
+        }).get();
+
+        if (selectedChapters.length === 0) {
+            showNotification('没有选择任何章节', 'warning');
+            return;
+        }
+
+        // 准备修复
+        totalChapters = selectedChapters.length;
+        startTime = Date.now();
+
+        // 显示结果区域
+        $('#fixResults').show();
+
+        // 重置状态
+        resetChapterStatuses();
+        resetProgress();
+
+        // 开始修复
+        performFix(selectedChapters);
+    }
+
+    function performFix(chapterIds) {
+        // 禁用按钮
+        $('#fixSelectedBtn').prop('disabled', true).html('<span class="loading-spinner me-2"></span>修复中...');
+
+        // 准备数据
+        const formData = new FormData();
+        chapterIds.forEach(id => {
+            formData.append('chapter_ids[]', id);
+        });
+
+        // 发送请求
+        fetch('{% url "novels:mcp_chapter_fix" novel.id %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            handleFixResponse(data);
+        })
+        .catch(error => {
+            console.error('修复请求失败:', error);
+            showNotification('修复请求失败，请检查网络连接', 'error');
+            resetUI();
+        });
+    }
+
+    function handleFixResponse(data) {
+        if (data.success) {
+            showNotification(data.message, 'success');
+
+            // 更新进度
+            updateProgress(totalChapters, totalChapters, 0);
+
+            // 刷新页面显示最新数据
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            showNotification(data.message, 'error');
+            resetUI();
+        }
+    }
+
+    function resetChapterStatuses() {
+        $('.chapter-status .status-badge').removeClass('status-completed status-failed')
+            .addClass('status-processing').html('<i class="fas fa-clock me-1"></i>处理中');
+    }
+
+    function resetProgress() {
+        $('#successCount').text('0');
+        $('#errorCount').text('0');
+        $('#progressPercent').text('0%');
+        $('#timeElapsed').text('0秒');
+        $('#progressBar').css('width', '0%');
+    }
+
+    function updateProgress(successCount, errorCount, processedCount) {
+        const total = successCount + errorCount;
+        const percentage = total > 0 ? Math.round((processedCount / totalChapters) * 100) : 0;
+        const elapsed = Math.round((Date.now() - startTime) / 1000);
+
+        $('#successCount').text(successCount);
+        $('#errorCount').text(errorCount);
+        $('#progressPercent').text(percentage + '%');
+        $('#timeElapsed').text(elapsed + '秒');
+        $('#progressBar').css('width', percentage + '%');
+    }
+
+    function resetUI() {
+        $('#fixSelectedBtn').prop('disabled', false).html('<i class="fas fa-magic me-2"></i>修复选中章节');
+    }
+
+    // 初始化
+    updateSelectedCount();
+    updateMasterCheckbox();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 小说音频系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            max-width: 900px;
+            width: 100%;
+        }
+        
+        .login-left {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 60px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .login-right {
+            padding: 60px 40px;
+        }
+        
+        .logo {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .welcome-text {
+            font-size: 1.5rem;
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 30px;
+        }
+        
+        .feature-list li {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            font-size: 1.1rem;
+        }
+        
+        .feature-list i {
+            margin-right: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .form-floating {
+            margin-bottom: 20px;
+        }
+        
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-login {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            width: 100%;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-login:active {
+            transform: translateY(0);
+        }
+        
+        .btn-login.loading {
+            pointer-events: none;
+        }
+        
+        .spinner {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .btn-login.loading .spinner {
+            display: block;
+        }
+        
+        .btn-login.loading .btn-text {
+            opacity: 0;
+        }
+        
+        .forgot-password {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .forgot-password:hover {
+            color: #764ba2;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+            margin-bottom: 20px;
+        }
+        
+        .floating-shapes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+        
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .shape:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        
+        .shape:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            right: 10%;
+            animation-delay: 2s;
+        }
+        
+        .shape:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .login-left {
+                padding: 40px 20px;
+            }
+            
+            .login-right {
+                padding: 40px 20px;
+            }
+            
+            .logo {
+                font-size: 2rem;
+            }
+            
+            .welcome-text {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="login-container">
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+        
+        <div class="login-card">
+            <div class="row g-0 h-100">
+                <!-- 左侧欢迎区域 -->
+                <div class="col-lg-6 d-none d-lg-block">
+                    <div class="login-left">
+                        <div class="logo">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h2 class="welcome-text">欢迎回来</h2>
+                        <p class="mb-0">登录您的小说音频系统账户</p>
+                        
+                        <ul class="feature-list">
+                            <li>
+                                <i class="fas fa-magic"></i>
+                                AI智能脚本生成
+                            </li>
+                            <li>
+                                <i class="fas fa-microphone"></i>
+                                高质量音频转换
+                            </li>
+                            <li>
+                                <i class="fas fa-cogs"></i>
+                                完整工作流管理
+                            </li>
+                            <li>
+                                <i class="fas fa-chart-line"></i>
+                                详细数据统计
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- 右侧登录表单 -->
+                <div class="col-lg-6">
+                    <div class="login-right">
+                        <div class="text-center mb-4">
+                            <h3 class="fw-bold text-dark">账户登录</h3>
+                            <p class="text-muted">请输入您的登录凭据</p>
+                        </div>
+                        
+                        <!-- 错误消息 -->
+                        <div v-if="errorMessage" class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            {{ errorMessage }}
+                        </div>
+                        
+                        <!-- 成功消息 -->
+                        <div v-if="successMessage" class="alert alert-success" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            {{ successMessage }}
+                        </div>
+                        
+                        <form @submit.prevent="handleLogin" method="post">
+                            {% csrf_token %}
+                            
+                            <!-- 用户名输入 -->
+                            <div class="form-floating">
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="username" 
+                                    name="username"
+                                    v-model="formData.username"
+                                    placeholder="用户名"
+                                    required
+                                    :disabled="isLoading"
+                                >
+                                <label for="username">
+                                    <i class="fas fa-user me-2"></i>用户名
+                                </label>
+                            </div>
+                            
+                            <!-- 密码输入 -->
+                            <div class="form-floating">
+                                <input 
+                                    type="password" 
+                                    class="form-control" 
+                                    id="password" 
+                                    name="password"
+                                    v-model="formData.password"
+                                    placeholder="密码"
+                                    required
+                                    :disabled="isLoading"
+                                >
+                                <label for="password">
+                                    <i class="fas fa-lock me-2"></i>密码
+                                </label>
+                            </div>
+                            
+                            <!-- 记住我 -->
+                            <div class="form-check mb-3">
+                                <input 
+                                    class="form-check-input" 
+                                    type="checkbox" 
+                                    id="remember" 
+                                    name="remember"
+                                    v-model="formData.remember"
+                                >
+                                <label class="form-check-label" for="remember">
+                                    记住我
+                                </label>
+                            </div>
+                            
+                            <!-- 登录按钮 -->
+                            <button 
+                                type="submit" 
+                                class="btn btn-login"
+                                :class="{ loading: isLoading }"
+                                :disabled="isLoading"
+                            >
+                                <span class="btn-text">
+                                    <i class="fas fa-sign-in-alt me-2"></i>登录
+                                </span>
+                                <div class="spinner">
+                                    <div class="spinner-border spinner-border-sm text-light" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </button>
+                        </form>
+                        
+                        <!-- 忘记密码链接 -->
+                        <div class="text-center mt-4">
+                            <a href="#" class="forgot-password">
+                                <i class="fas fa-question-circle me-1"></i>忘记密码？
+                            </a>
+                        </div>
+                        
+                        <!-- 注册链接 -->
+                        <div class="text-center mt-3">
+                            <span class="text-muted">还没有账户？</span>
+                            <a href="#" class="forgot-password ms-1">立即注册</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    formData: {
+                        username: '',
+                        password: '',
+                        remember: false
+                    },
+                    isLoading: false,
+                    errorMessage: '',
+                    successMessage: ''
+                }
+            },
+            methods: {
+                async handleLogin() {
+                    // 清除之前的消息
+                    this.errorMessage = '';
+                    this.successMessage = '';
+                    
+                    // 基本验证
+                    if (!this.formData.username.trim()) {
+                        this.errorMessage = '请输入用户名';
+                        return;
+                    }
+                    
+                    if (!this.formData.password.trim()) {
+                        this.errorMessage = '请输入密码';
+                        return;
+                    }
+                    
+                    this.isLoading = true;
+                    
+                    try {
+                        // 获取CSRF token
+                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                        
+                        // 发送登录请求
+                        const response = await fetch('/auth/ajax-login/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken
+                            },
+                            body: JSON.stringify({
+                                'username': this.formData.username,
+                                'password': this.formData.password,
+                                'remember': this.formData.remember
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            this.successMessage = '登录成功，正在跳转...';
+                            
+                            // 延迟跳转以显示成功消息
+                            setTimeout(() => {
+                                window.location.href = '/';
+                            }, 1500);
+                        } else {
+                            const data = await response.text();
+                            this.errorMessage = '用户名或密码错误';
+                        }
+                    } catch (error) {
+                        console.error('登录错误:', error);
+                        this.errorMessage = '网络错误，请稍后重试';
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+                
+                // 输入时清除错误消息
+                clearError() {
+                    if (this.errorMessage) {
+                        this.errorMessage = '';
+                    }
+                }
+            },
+            
+            watch: {
+                'formData.username'() {
+                    this.clearError();
+                },
+                'formData.password'() {
+                    this.clearError();
+                }
+            },
+            
+            mounted() {
+                // 页面加载完成后的初始化
+                console.log('登录页面已加载');
+                
+                // 如果有URL参数中的错误消息，显示它
+                const urlParams = new URLSearchParams(window.location.search);
+                const error = urlParams.get('error');
+                if (error) {
+                    this.errorMessage = decodeURIComponent(error);
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

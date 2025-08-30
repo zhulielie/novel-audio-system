@@ -1,0 +1,325 @@
+{
+  "sites": {
+    "hetushu": {
+      "name": "和图书",
+      "base_url": "https://www.hetushu.com",
+      "encoding": "utf-8",
+      "selectors": {
+        "title": "h2",
+        "content": "#content",
+        "chapter_list": "#dir dd a",
+        "next_page": ".next-page"
+      },
+      "url_patterns": {
+        "chapter_url_pattern": "",
+        "book_url_pattern": "",
+        "relative_url_base": "https://www.hetushu.com"
+      },
+      "request_config": {
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+          "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+          "Accept-Encoding": "gzip, deflate, br",
+          "Connection": "keep-alive",
+          "Upgrade-Insecure-Requests": "1"
+        },
+        "timeout": 30000,
+        "wait_for": "networkidle",
+        "delay_between_requests": 3000,
+        "retry_count": 3,
+        "retry_delay": 5000
+      },
+      "content_processing": {
+        "title_cleanup": {
+          "remove_patterns": [
+            "\\s*第\\d+章\\s*",
+            "\\s*章节\\d+\\s*"
+          ],
+          "replace_patterns": {}
+        },
+        "content_cleanup": {
+          "remove_patterns": [
+            "<script[^>]*>.*?</script>",
+            "<style[^>]*>.*?</style>",
+            "<!--.*?-->",
+            "和图书.*?www\\.hetushu\\.com",
+            "本书来自.*?",
+            "更新时间.*?",
+            "\\s*广告\\s*"
+          ],
+          "normalize_whitespace": true
+        }
+      },
+      "file_naming": {
+        "pattern": "{title}",
+        "max_filename_length": 200,
+        "fallback_pattern": "章节_{chapter_id}_{timestamp}"
+      }
+    },
+    "qidian": {
+      "name": "起点中文网",
+      "base_url": "https://www.qidian.com",
+      "encoding": "utf-8",
+      "selectors": {
+        "title": ".j_chapterName",
+        "content": ".read-content",
+        "chapter_list": ".volume-wrap .cf a",
+        "next_page": ".next-page"
+      },
+      "url_patterns": {
+        "chapter_url_pattern": "",
+        "book_url_pattern": "",
+        "relative_url_base": "https://www.qidian.com"
+      },
+      "request_config": {
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          "Referer": "https://www.qidian.com/",
+          "Cookie": ""
+        },
+        "timeout": 30000,
+        "wait_for": "networkidle",
+        "delay_between_requests": 5000,
+        "retry_count": 3,
+        "retry_delay": 5000
+      },
+      "content_processing": {
+        "title_cleanup": {
+          "remove_patterns": [
+            "\\s*第\\d+章\\s*",
+            "\\s*章节\\d+\\s*"
+          ],
+          "replace_patterns": {}
+        },
+        "content_cleanup": {
+          "remove_patterns": [
+            "起点中文网.*?欢迎广大书友光临阅读",
+            "最新最快最火的连载作品尽在起点原创",
+            "<script[^>]*>.*?</script>",
+            "<!--.*?-->"
+          ],
+          "normalize_whitespace": true
+        }
+      },
+      "file_naming": {
+        "pattern": "{title}",
+        "max_filename_length": 200,
+        "fallback_pattern": "章节_{chapter_id}_{timestamp}"
+      }
+    },
+    "zongheng": {
+      "name": "纵横中文网",
+      "base_url": "https://www.zongheng.com",
+      "encoding": "utf-8",
+      "selectors": {
+        "title": ".title_txtbox",
+        "content": ".content",
+        "chapter_list": ".chapter-list a",
+        "next_page": ".next-page"
+      },
+      "url_patterns": {
+        "chapter_url_pattern": "",
+        "book_url_pattern": "",
+        "relative_url_base": "https://www.zongheng.com"
+      },
+      "request_config": {
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+          "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+          "Accept-Encoding": "gzip, deflate, br",
+          "Connection": "keep-alive",
+          "Upgrade-Insecure-Requests": "1"
+        },
+        "timeout": 30000,
+        "wait_for": "networkidle",
+        "delay_between_requests": 4000,
+        "retry_count": 3,
+        "retry_delay": 5000
+      },
+      "content_processing": {
+        "title_cleanup": {
+          "remove_patterns": [
+            "\\s*第\\d+章\\s*",
+            "\\s*章节\\d+\\s*"
+          ],
+          "replace_patterns": {}
+        },
+        "content_cleanup": {
+          "remove_patterns": [
+            "纵横中文网.*?首发",
+            "www\\.zongheng\\.com",
+            "<script[^>]*>.*?</script>",
+            "<!--.*?-->"
+          ],
+          "normalize_whitespace": true
+        }
+      },
+      "file_naming": {
+        "pattern": "{title}",
+        "max_filename_length": 200,
+        "fallback_pattern": "章节_{chapter_id}_{timestamp}"
+      }
+    },
+    "17k": {
+      "name": "17K小说网",
+      "base_url": "https://www.17k.com",
+      "encoding": "utf-8",
+      "selectors": {
+        "title": ".readAreaBox .p",
+        "content": ".readAreaBox .p",
+        "chapter_list": ".chapter a",
+        "next_page": ".next-page"
+      },
+      "url_patterns": {
+        "chapter_url_pattern": "",
+        "book_url_pattern": "",
+        "relative_url_base": "https://www.17k.com"
+      },
+      "request_config": {
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+          "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+          "Accept-Encoding": "gzip, deflate, br",
+          "Connection": "keep-alive",
+          "Upgrade-Insecure-Requests": "1"
+        },
+        "timeout": 30000,
+        "wait_for": "networkidle",
+        "delay_between_requests": 3000,
+        "retry_count": 3,
+        "retry_delay": 5000
+      },
+      "content_processing": {
+        "title_cleanup": {
+          "remove_patterns": [
+            "\\s*第\\d+章\\s*",
+            "\\s*章节\\d+\\s*"
+          ],
+          "replace_patterns": {}
+        },
+        "content_cleanup": {
+          "remove_patterns": [
+            "17K小说网.*?www\\.17k\\.com",
+            "手机用户请浏览.*?阅读",
+            "<script[^>]*>.*?</script>"
+          ],
+          "normalize_whitespace": true
+        }
+      },
+      "file_naming": {
+        "pattern": "{title}",
+        "max_filename_length": 200,
+        "fallback_pattern": "章节_{chapter_id}_{timestamp}"
+      }
+    },
+    "biquge": {
+      "name": "笔趣阁",
+      "base_url": "https://www.biquge.com",
+      "encoding": "utf-8",
+      "selectors": {
+        "title": ".bookname h1",
+        "content": "#content",
+        "chapter_list": ".listmain a",
+        "next_page": ".next-page"
+      },
+      "url_patterns": {
+        "chapter_url_pattern": "",
+        "book_url_pattern": "",
+        "relative_url_base": "https://www.biquge.com"
+      },
+      "request_config": {
+        "headers": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+          "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+          "Accept-Encoding": "gzip, deflate, br",
+          "Connection": "keep-alive",
+          "Upgrade-Insecure-Requests": "1"
+        },
+        "timeout": 30000,
+        "wait_for": "networkidle",
+        "delay_between_requests": 2000,
+        "retry_count": 3,
+        "retry_delay": 5000
+      },
+      "content_processing": {
+        "title_cleanup": {
+          "remove_patterns": [
+            "\\s*第\\d+章\\s*",
+            "\\s*章节\\d+\\s*"
+          ],
+          "replace_patterns": {}
+        },
+        "content_cleanup": {
+          "remove_patterns": [
+            "笔趣阁.*?www\\.biquge\\.com",
+            "请记住本站域名",
+            "<script[^>]*>.*?</script>",
+            "一秒记住.*?"
+          ],
+          "normalize_whitespace": true
+        }
+      },
+      "file_naming": {
+        "pattern": "{title}",
+        "max_filename_length": 200,
+        "fallback_pattern": "章节_{chapter_id}_{timestamp}"
+      }
+    }
+  },
+  "global_settings": {
+    "default_site": "hetushu",
+    "output_directory": "./downloads",
+    "create_site_subdirectory": true,
+    "create_book_subdirectory": true,
+    "chapter_content_subdirectory": "章节内容",
+    "generate_download_report": true,
+    "report_format": "json",
+    "log_level": "info",
+    "max_concurrent_downloads": 1,
+    "browser_config": {
+      "headless": true,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "locale": "zh-CN",
+      "timezone": "Asia/Shanghai"
+    }
+  },
+  "file_templates": {
+    "chapter_file": {
+      "header": "标题: {title}\nURL: {url}\n获取状态: {status}\n获取时间: {timestamp}\n\n",
+      "separator": "==================================================",
+      "content": "{content}",
+      "footer": "\n\n下载完成"
+    }
+  },
+  "advanced_features": {
+    "auto_encoding_detection": true,
+    "javascript_processing": false,
+    "cloudflare_bypass": false,
+    "proxy_support": false,
+    "cookie_management": false,
+    "content_validation": {
+      "min_content_length": 50,
+      "required_keywords": [],
+      "forbidden_keywords": [
+        "404错误",
+        "页面不存在",
+        "访问被拒绝",
+        "服务器错误"
+      ]
+    }
+  },
+  "error_handling": {
+    "max_retries": 3,
+    "retry_delay": 5000,
+    "timeout_handling": "skip",
+    "error_log_file": "error.log",
+    "continue_on_error": true
+  }
+}

@@ -1,0 +1,410 @@
+{% extends 'base/base.html' %}
+
+{% block title %}数据重置和重新爬取{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0">
+                            <i class="fas fa-database me-2"></i>
+                            数据重置和重新爬取
+                        </h4>
+                        <small class="text-white-50">
+                            删除现有章节数据并从网站重新爬取最新内容
+                        </small>
+                    </div>
+                    <div>
+                        <a href="{% url 'novels:novel_list' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i>返回小说管理
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                {% if error %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    {{ error }}
+                </div>
+                {% endif %}
+
+                <!-- 当前状态 -->
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    当前数据库状态
+                                </h6>
+                                <div class="row text-center">
+                                    <div class="col-md-3">
+                                        <div class="h4 text-primary" id="totalNovels">{{ total_novels }}</div>
+                                        <small class="text-muted">小说数量</small>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="h4 text-success" id="totalChapters">{{ total_chapters }}</div>
+                                        <small class="text-muted">章节数量</small>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="h4 text-info" id="latestBackup">
+                                            {% if latest_backup %}
+                                                <i class="fas fa-check text-success"></i>
+                                            {% else %}
+                                                <i class="fas fa-times text-muted"></i>
+                                            {% endif %}
+                                        </div>
+                                        <small class="text-muted">备份状态</small>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="h4 text-warning" id="operationStatus">
+                                            <i class="fas fa-clock"></i>
+                                        </div>
+                                        <small class="text-muted">操作状态</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">快速操作</h6>
+                                <button id="refreshStatusBtn" class="btn btn-outline-primary btn-sm mb-2">
+                                    <i class="fas fa-sync-alt me-1"></i>
+                                    刷新状态
+                                </button>
+                                <div class="text-muted small">
+                                    点击查看最新数据统计
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作面板 -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-tools me-2"></i>
+                                    操作面板
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>重要提醒：</strong>此操作将删除所有现有章节数据！建议在操作前创建备份。
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-3 text-center">
+                                        <button id="backupBtn" class="btn btn-info btn-lg mb-3" style="width: 100%;">
+                                            <i class="fas fa-save me-2"></i>
+                                            <div>创建备份</div>
+                                            <small class="text-muted">备份现有数据</small>
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3 text-center">
+                                        <button id="deleteBtn" class="btn btn-warning btn-lg mb-3" style="width: 100%;">
+                                            <i class="fas fa-trash me-2"></i>
+                                            <div>删除数据</div>
+                                            <small class="text-muted">删除所有章节</small>
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3 text-center">
+                                        <button id="recrawlBtn" class="btn btn-success btn-lg mb-3" style="width: 100%;">
+                                            <i class="fas fa-spider me-2"></i>
+                                            <div>重新爬取</div>
+                                            <small class="text-muted">从网站爬取数据</small>
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3 text-center">
+                                        <button id="fullResetBtn" class="btn btn-danger btn-lg mb-3" style="width: 100%;">
+                                            <i class="fas fa-redo me-2"></i>
+                                            <div>完整重置</div>
+                                            <small class="text-muted">一键完成所有操作</small>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="text-center text-muted">
+                                    <small>建议按顺序执行：备份 → 删除 → 重新爬取</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作日志 -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-list me-2"></i>
+                                    操作日志
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="operationLog" class="border rounded p-3 bg-light"
+                                     style="height: 300px; overflow-y: auto; font-family: monospace;">
+                                    <div class="text-muted">等待操作...</div>
+                                </div>
+                                <div class="mt-3">
+                                    <button id="clearLogBtn" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-trash me-1"></i>
+                                        清空日志
+                                    </button>
+                                    <button id="downloadLogBtn" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download me-1"></i>
+                                        下载日志
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 确认对话框 -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmTitle">确认操作</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">确认执行此操作？</p>
+                <div class="alert alert-danger" id="confirmWarning" style="display: none;">
+                    <strong>⚠️ 警告：</strong>此操作将删除所有现有数据且无法撤销！
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="confirmBtn">确认</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 进度对话框 -->
+<div class="modal fade" id="progressModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">操作进行中</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="progress mb-3">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                         role="progressbar" style="width: 100%"></div>
+                </div>
+                <p id="progressMessage">正在执行操作，请稍候...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    let currentAction = '';
+    let operationInterval = null;
+
+    // 页面加载时刷新状态
+    refreshStatus();
+
+    // 按钮事件绑定
+    $('#backupBtn').on('click', function() {
+        showConfirm('创建备份', '确定要创建当前数据的备份吗？', 'backup');
+    });
+
+    $('#deleteBtn').on('click', function() {
+        showConfirm('删除数据', '确定要删除所有章节数据吗？', 'delete', true);
+    });
+
+    $('#recrawlBtn').on('click', function() {
+        showConfirm('重新爬取', '确定要从网站重新爬取数据吗？', 'recrawl');
+    });
+
+    $('#fullResetBtn').on('click', function() {
+        showConfirm('完整重置', '确定要执行完整重置（备份+删除+爬取）吗？', 'full_reset', true);
+    });
+
+    $('#refreshStatusBtn').on('click', function() {
+        refreshStatus();
+    });
+
+    $('#clearLogBtn').on('click', function() {
+        $('#operationLog').html('<div class="text-muted">日志已清空...</div>');
+        addLog('🗑️ 日志已清空', 'info');
+    });
+
+    $('#confirmBtn').on('click', function() {
+        executeAction(currentAction);
+        $('#confirmModal').modal('hide');
+    });
+
+    function showConfirm(title, message, action, showWarning = false) {
+        $('#confirmTitle').text(title);
+        $('#confirmMessage').text(message);
+        currentAction = action;
+
+        if (showWarning) {
+            $('#confirmWarning').show();
+        } else {
+            $('#confirmWarning').hide();
+        }
+
+        $('#confirmModal').modal('show');
+    }
+
+    function executeAction(action) {
+        addLog(`🚀 开始执行: ${action}`, 'info');
+
+        // 显示进度对话框
+        $('#progressModal').modal({
+            backdrop: 'static',
+            keyboard: false
+        });
+
+        $('#progressMessage').text('正在执行操作，请稍候...');
+
+        // 发送请求
+        $.post('{% url "novels:data_recrawl" %}', {
+            action: action,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        })
+        .done(function(response) {
+            $('#progressModal').modal('hide');
+
+            if (response.success) {
+                addLog(`✅ 操作成功: ${response.message}`, 'success');
+
+                if (response.running) {
+                    addLog('⏳ 操作在后台运行中，请稍后刷新状态查看结果', 'warning');
+                    startOperationMonitoring();
+                } else {
+                    refreshStatus();
+                }
+            } else {
+                addLog(`❌ 操作失败: ${response.message}`, 'error');
+            }
+        })
+        .fail(function(xhr, status, error) {
+            $('#progressModal').modal('hide');
+            addLog(`❌ 网络错误: ${error}`, 'error');
+        });
+    }
+
+    function refreshStatus() {
+        addLog('🔍 刷新状态...', 'info');
+
+        $.get('{% url "novels:data_operation_status" %}')
+        .done(function(response) {
+            if (response.success) {
+                $('#totalNovels').text(response.total_novels);
+                $('#totalChapters').text(response.total_chapters);
+
+                if (response.latest_backup) {
+                    $('#latestBackup').html('<i class="fas fa-check text-success"></i>');
+                    addLog(`📦 最新备份: ${response.latest_backup}`, 'info');
+                } else {
+                    $('#latestBackup').html('<i class="fas fa-times text-muted"></i>');
+                    addLog('📦 没有找到备份文件', 'warning');
+                }
+
+                $('#operationStatus').html('<i class="fas fa-check text-success"></i>');
+            } else {
+                addLog(`❌ 获取状态失败: ${response.message}`, 'error');
+                $('#operationStatus').html('<i class="fas fa-times text-danger"></i>');
+            }
+        })
+        .fail(function() {
+            addLog('❌ 网络错误：无法获取状态', 'error');
+            $('#operationStatus').html('<i class="fas fa-times text-danger"></i>');
+        });
+    }
+
+    function startOperationMonitoring() {
+        if (operationInterval) {
+            clearInterval(operationInterval);
+        }
+
+        operationInterval = setInterval(function() {
+            refreshStatus();
+        }, 30000); // 每30秒检查一次
+
+        addLog('👀 已启动后台监控，每30秒检查一次状态', 'info');
+    }
+
+    function addLog(message, type = 'info') {
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = `<div class="log-entry log-${type}">[${timestamp}] ${message}</div>`;
+
+        const logContainer = $('#operationLog');
+        logContainer.append(logEntry);
+        logContainer.scrollTop(logContainer[0].scrollHeight);
+    }
+
+    // 初始日志
+    addLog('👋 数据重置页面已加载', 'info');
+    addLog('💡 建议操作顺序：备份 → 删除 → 重新爬取', 'info');
+
+    // 页面关闭时清理定时器
+    $(window).on('beforeunload', function() {
+        if (operationInterval) {
+            clearInterval(operationInterval);
+        }
+    });
+});
+</script>
+
+<style>
+.log-entry {
+    padding: 2px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9em;
+}
+
+.log-info { color: #0066cc; }
+.log-success { color: #28a745; }
+.log-warning { color: #ffc107; }
+.log-error { color: #dc3545; }
+
+#operationLog {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.btn {
+    min-height: 80px;
+}
+
+.btn i {
+    font-size: 1.5em;
+}
+
+.btn div {
+    font-weight: bold;
+    margin: 5px 0;
+}
+
+.btn small {
+    opacity: 0.8;
+}
+</style>
+{% endblock %}

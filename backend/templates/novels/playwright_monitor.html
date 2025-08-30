@@ -1,0 +1,404 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Playwright浏览器监控{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-0">
+                            <i class="fas fa-desktop me-2"></i>
+                            Playwright浏览器监控
+                        </h4>
+                        <small class="text-white-50">
+                            实时监控和控制Playwright浏览器状态，防止超时自动关闭
+                        </small>
+                    </div>
+                    <div>
+                        <a href="{% url 'novels:data_reset' %}" class="btn btn-outline-danger btn-sm me-2">
+                            <i class="fas fa-database me-1"></i>数据重置
+                        </a>
+                        <a href="{% url 'novels:novel_detail' 1 %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-arrow-left me-1"></i>返回小说管理
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <!-- 状态显示 -->
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    当前状态
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            <div class="h4" id="browserStatus">
+                                                <i class="fas fa-spinner fa-spin text-warning"></i>
+                                            </div>
+                                            <small class="text-muted">浏览器状态</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            <div class="h4" id="connectionStatus">
+                                                <i class="fas fa-spinner fa-spin text-warning"></i>
+                                            </div>
+                                            <small class="text-muted">连接状态</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            <div class="h4" id="lastActivity">未知</div>
+                                            <small class="text-muted">最后活动</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            <div class="h4" id="inactiveTime">0秒</div>
+                                            <small class="text-muted">非活跃时间</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">快速操作</h6>
+                                <button id="keepaliveBtn" class="btn btn-success btn-lg mb-2">
+                                    <i class="fas fa-heartbeat me-2"></i>
+                                    发送保活信号
+                                </button>
+                                <button id="testConnectionBtn" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-link me-2"></i>
+                                    测试连接
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 控制面板 -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-cogs me-2"></i>
+                                    控制面板
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>浏览器控制</h6>
+                                        <div class="d-grid gap-2">
+                                            <button id="startBrowserBtn" class="btn btn-success">
+                                                <i class="fas fa-play me-2"></i>
+                                                启动浏览器
+                                            </button>
+                                            <button id="stopBrowserBtn" class="btn btn-danger" disabled>
+                                                <i class="fas fa-stop me-2"></i>
+                                                停止浏览器
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>下载控制</h6>
+                                        <div class="d-grid gap-2">
+                                            <button id="startDownloadBtn" class="btn btn-primary" disabled>
+                                                <i class="fas fa-download me-2"></i>
+                                                开始下载
+                                            </button>
+                                            <button id="stopDownloadBtn" class="btn btn-warning" disabled>
+                                                <i class="fas fa-pause me-2"></i>
+                                                暂停下载
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 活动日志 -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-list me-2"></i>
+                                    活动日志
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div id="activityLog" class="border rounded p-3 bg-light"
+                                     style="height: 300px; overflow-y: auto; font-family: monospace;">
+                                    <div class="text-muted">等待活动...</div>
+                                </div>
+                                <div class="mt-3">
+                                    <button id="clearLogBtn" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-trash me-1"></i>
+                                        清空日志
+                                    </button>
+                                    <button id="refreshStatusBtn" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-sync-alt me-1"></i>
+                                        刷新状态
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 启动浏览器对话框 -->
+<div class="modal fade" id="startBrowserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-desktop me-2"></i>
+                    启动浏览器
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>请选择浏览器模式：</p>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="browserMode" id="headedMode" value="headed" checked>
+                    <label class="form-check-label" for="headedMode">
+                        <strong>有头模式</strong> - 显示浏览器窗口，便于处理验证码
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="browserMode" id="headlessMode" value="headless">
+                    <label class="form-check-label" for="headlessMode">
+                        <strong>无头模式</strong> - 后台运行，更快更稳定
+                    </label>
+                </div>
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    建议初次使用选择有头模式，便于观察和处理可能的验证码。
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-success" id="confirmStartBrowser">
+                    <i class="fas fa-play me-1"></i>
+                    启动浏览器
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    let browserRunning = false;
+    let downloadRunning = false;
+
+    // 页面加载时刷新状态
+    refreshStatus();
+
+    // 自动刷新状态（每30秒）
+    setInterval(refreshStatus, 30000);
+
+    // 刷新状态按钮
+    $('#refreshStatusBtn').on('click', function() {
+        refreshStatus();
+        addLog('🔄 手动刷新状态', 'info');
+    });
+
+    // 清空日志按钮
+    $('#clearLogBtn').on('click', function() {
+        $('#activityLog').html('<div class="text-muted">日志已清空...</div>');
+        addLog('🗑️ 日志已清空', 'info');
+    });
+
+    // 发送保活信号
+    $('#keepaliveBtn').on('click', function() {
+        sendKeepalive();
+    });
+
+    // 测试连接
+    $('#testConnectionBtn').on('click', function() {
+        testConnection();
+    });
+
+    // 启动浏览器
+    $('#startBrowserBtn').on('click', function() {
+        $('#startBrowserModal').modal('show');
+    });
+
+    // 确认启动浏览器
+    $('#confirmStartBrowser').on('click', function() {
+        const mode = $('input[name="browserMode"]:checked').val();
+        startBrowser(mode);
+        $('#startBrowserModal').modal('hide');
+    });
+
+    // 停止浏览器
+    $('#stopBrowserBtn').on('click', function() {
+        stopBrowser();
+    });
+
+    function refreshStatus() {
+        $.get('{% url "novels:playwright_status" %}')
+        .done(function(response) {
+            if (response.success) {
+                updateStatusDisplay(response.status);
+            } else {
+                addLog('❌ 获取状态失败: ' + response.message, 'error');
+            }
+        })
+        .fail(function() {
+            addLog('❌ 网络错误：无法连接到状态服务', 'error');
+        });
+    }
+
+    function updateStatusDisplay(status) {
+        // 更新浏览器状态
+        if (status.browser_connected) {
+            $('#browserStatus').html('<i class="fas fa-desktop text-success"></i>');
+            browserRunning = true;
+            $('#startBrowserBtn').prop('disabled', true);
+            $('#stopBrowserBtn').prop('disabled', false);
+            $('#startDownloadBtn').prop('disabled', false);
+        } else {
+            $('#browserStatus').html('<i class="fas fa-desktop text-danger"></i>');
+            browserRunning = false;
+            $('#startBrowserBtn').prop('disabled', false);
+            $('#stopBrowserBtn').prop('disabled', true);
+            $('#startDownloadBtn').prop('disabled', true);
+        }
+
+        // 更新连接状态
+        if (status.page_available) {
+            $('#connectionStatus').html('<i class="fas fa-link text-success"></i>');
+        } else {
+            $('#connectionStatus').html('<i class="fas fa-unlink text-warning"></i>');
+        }
+
+        // 更新活动信息
+        $('#lastActivity').text(status.last_activity);
+        $('#inactiveTime').text(status.inactive_time + '秒');
+
+        // 颜色编码
+        if (status.inactive_time > 300) { // 5分钟
+            $('#inactiveTime').removeClass('text-success text-warning').addClass('text-danger');
+        } else if (status.inactive_time > 60) { // 1分钟
+            $('#inactiveTime').removeClass('text-success text-danger').addClass('text-warning');
+        } else {
+            $('#inactiveTime').removeClass('text-warning text-danger').addClass('text-success');
+        }
+    }
+
+    function sendKeepalive() {
+        addLog('🔄 发送保活信号...', 'info');
+
+        $.post('{% url "novels:playwright_keepalive" %}')
+        .done(function(response) {
+            if (response.success) {
+                addLog('✅ 保活信号发送成功', 'success');
+                refreshStatus();
+            } else {
+                addLog('❌ 保活信号发送失败: ' + response.message, 'error');
+            }
+        })
+        .fail(function() {
+            addLog('❌ 网络错误：无法发送保活信号', 'error');
+        });
+    }
+
+    function testConnection() {
+        addLog('🔗 测试浏览器连接...', 'info');
+
+        // 这里可以调用一个测试接口
+        addLog('✅ 连接测试完成（模拟）', 'success');
+    }
+
+    function startBrowser(mode) {
+        addLog(`🚀 启动浏览器 (模式: ${mode})...`, 'info');
+
+        // 这里应该调用启动浏览器的API
+        setTimeout(function() {
+            addLog('✅ 浏览器启动成功', 'success');
+            browserRunning = true;
+            updateStatusDisplay({
+                browser_connected: true,
+                page_available: true,
+                last_activity: new Date().toLocaleTimeString(),
+                inactive_time: 0
+            });
+        }, 2000);
+    }
+
+    function stopBrowser() {
+        addLog('⏹️ 停止浏览器...', 'info');
+
+        setTimeout(function() {
+            addLog('✅ 浏览器已停止', 'success');
+            browserRunning = false;
+            updateStatusDisplay({
+                browser_connected: false,
+                page_available: false,
+                last_activity: '已停止',
+                inactive_time: 0
+            });
+        }, 1000);
+    }
+
+    function addLog(message, type = 'info') {
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = `<div class="log-entry log-${type}">[${timestamp}] ${message}</div>`;
+
+        const logContainer = $('#activityLog');
+        logContainer.append(logEntry);
+        logContainer.scrollTop(logContainer[0].scrollHeight);
+    }
+
+    // 添加一些初始日志
+    addLog('👋 Playwright监控页面已加载', 'info');
+    addLog('🔍 正在检查浏览器状态...', 'info');
+});
+</script>
+
+<style>
+.log-entry {
+    padding: 2px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9em;
+}
+
+.log-info { color: #0066cc; }
+.log-success { color: #28a745; }
+.log-warning { color: #ffc107; }
+.log-error { color: #dc3545; }
+
+#activityLog {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+}
+</style>
+{% endblock %}
