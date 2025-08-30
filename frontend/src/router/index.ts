@@ -8,7 +8,7 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('../views/LoginView.vue'),
+      component: () => import('../views/system/LoginView.vue'),
       meta: { requiresGuest: true },
     },
     {
@@ -93,6 +93,13 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: () => import('../views/ProfileView.vue'),
+      meta: { requiresAuth: true },
+    },
+    // 系统管理路由
+    {
+      path: '/system/users',
+      name: 'system-users',
+      component: () => import('../views/system/UsersView.vue'),
       meta: { requiresAuth: true },
     },
   ],

@@ -24,6 +24,9 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('admin/', admin.site.urls),
     
+    # 系统管理 API (django-vue3-admin 集成)
+    path('api/system/', include('system.urls')),
+    
     # API路由
     path('api/', include('novel_audio_system.api_urls')),
     

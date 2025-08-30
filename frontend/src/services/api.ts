@@ -277,4 +277,8 @@ export const apiService = {
   delete: (url: string) => api.delete(url),
 }
 
+// 导入系统API
+export { systemApi } from './systemApi'
+
+export { api }
 export default api

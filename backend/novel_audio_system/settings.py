@@ -61,6 +61,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'django_filters',
+    # 系统管理 (django-vue3-admin 集成)
+    'system',
     # 自定义应用
     'novels',
     'audios',
@@ -107,7 +109,7 @@ WSGI_APPLICATION = 'novel_audio_system.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / 'db_new.sqlite3',
     }
 }
 
@@ -157,6 +159,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# 自定义用户模型 (django-vue3-admin 集成)
+AUTH_USER_MODEL = 'system.User'
 
 # REST Framework配置
 REST_FRAMEWORK = {
