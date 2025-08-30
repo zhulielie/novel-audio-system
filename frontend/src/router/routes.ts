@@ -1,6 +1,6 @@
 import type { RouteRecordRaw } from 'vue-router'
 
-// 常量路由 - 不需要权限验证
+// 常量路由 - 不需要权限验证 (暂时包含所有路由)
 export const constantRoutes: RouteRecordRaw[] = [
   {
     path: '/redirect',
@@ -54,6 +54,94 @@ export const constantRoutes: RouteRecordRaw[] = [
         name: 'Profile',
         component: () => import('@/views/ProfileView.vue'),
         meta: { title: '个人中心', icon: 'User' }
+      }
+    ]
+  },
+  // 暂时将所有异步路由添加到常量路由中
+  {
+    path: '/system',
+    component: () => import('@/layout/AdminLayout.vue'),
+    redirect: '/system/users',
+    name: 'System',
+    meta: {
+      title: '系统管理',
+      icon: 'Setting'
+    },
+    children: [
+      {
+        path: 'users',
+        name: 'SystemUsers',
+        component: () => import('@/views/system/UsersView.vue'),
+        meta: {
+          title: '用户管理',
+          icon: 'User'
+        }
+      },
+      {
+        path: 'roles',
+        name: 'SystemRoles',
+        component: () => import('@/views/system/RolesView.vue'),
+        meta: {
+          title: '角色管理',
+          icon: 'UserFilled'
+        }
+      },
+      {
+        path: 'menus',
+        name: 'SystemMenus',
+        component: () => import('@/views/system/MenusView.vue'),
+        meta: {
+          title: '菜单管理',
+          icon: 'Menu'
+        }
+      },
+      {
+        path: 'departments',
+        name: 'SystemDepartments',
+        component: () => import('@/views/system/DepartmentsView.vue'),
+        meta: {
+          title: '部门管理',
+          icon: 'OfficeBuilding'
+        }
+      }
+    ]
+  },
+  {
+    path: '/novels',
+    component: () => import('@/layout/AdminLayout.vue'),
+    redirect: '/novels/list',
+    name: 'Novels',
+    meta: {
+      title: '小说管理',
+      icon: 'Reading'
+    },
+    children: [
+      {
+        path: 'list',
+        name: 'NovelsList',
+        component: () => import('@/views/NovelsView.vue'),
+        meta: {
+          title: '小说列表',
+          icon: 'List'
+        }
+      },
+      {
+        path: 'chapters',
+        name: 'NovelsChapters',
+        component: () => import('@/views/ChaptersView.vue'),
+        meta: {
+          title: '章节管理',
+          icon: 'Document'
+        }
+      },
+      {
+        path: 'sources',
+        name: 'NovelsSources',
+        component: () => import('@/views/NovelSourcesView.vue'),
+        meta: {
+          title: '来源管理',
+          icon: 'Link'
+        }
       }
     ]
   }
