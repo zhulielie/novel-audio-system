@@ -10,10 +10,8 @@
           @keyup.enter="handleFilter"
         />
         <el-button
-          v-waves
           class="filter-item"
           type="primary"
-          icon="Search"
           @click="handleFilter"
         >
           搜索
@@ -22,7 +20,6 @@
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
-          icon="Plus"
           @click="handleCreate"
         >
           添加角色
@@ -89,16 +86,20 @@
         </el-table-column>
       </el-table>
 
-      <pagination
-        v-show="total > 0"
-        :total="total"
-        :page.sync="listQuery.page"
-        :limit.sync="listQuery.limit"
-        @pagination="getList"
-      />
+      <div class="pagination-container" v-show="total > 0">
+        <el-pagination
+          v-model:current-page="listQuery.page"
+          v-model:page-size="listQuery.limit"
+          :page-sizes="[10, 20, 50, 100]"
+          :total="total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="getList"
+          @current-change="getList"
+        />
+      </div>
 
       <!-- 角色编辑对话框 -->
-      <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+      <el-dialog :title="textMap[dialogStatus]" v-model="dialogFormVisible">
         <el-form
           ref="dataForm"
           :rules="rules"
@@ -140,7 +141,7 @@
       </el-dialog>
 
       <!-- 权限分配对话框 -->
-      <el-dialog title="分配权限" :visible.sync="menuDialogVisible" width="600px">
+      <el-dialog title="分配权限" v-model="menuDialogVisible" width="600px">
         <el-tree
           ref="menuTree"
           :data="menuTreeData"

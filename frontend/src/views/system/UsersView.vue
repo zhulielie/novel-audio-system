@@ -20,21 +20,20 @@
           <el-option label="禁用" :value="false" />
         </el-select>
         <el-button
-          v-waves
           class="filter-item"
           type="primary"
-          icon="Search"
           @click="handleFilter"
         >
+          <el-icon><Search /></el-icon>
           搜索
         </el-button>
         <el-button
           class="filter-item"
           style="margin-left: 10px"
           type="primary"
-          icon="Plus"
           @click="handleCreate"
         >
+          <el-icon><Plus /></el-icon>
           添加用户
         </el-button>
       </div>
@@ -105,15 +104,19 @@
         </el-table-column>
       </el-table>
 
-      <pagination
-        v-show="total > 0"
-        :total="total"
-        :page.sync="listQuery.page"
-        :limit.sync="listQuery.limit"
-        @pagination="getList"
-      />
+      <div class="pagination-container" v-show="total > 0">
+        <el-pagination
+          v-model:current-page="listQuery.page"
+          v-model:page-size="listQuery.limit"
+          :page-sizes="[10, 20, 50, 100]"
+          :total="total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="getList"
+          @current-change="getList"
+        />
+      </div>
 
-      <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+      <el-dialog :title="textMap[dialogStatus]" v-model="dialogFormVisible">
         <el-form
           ref="dataForm"
           :rules="rules"
@@ -167,6 +170,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Search, Plus } from '@element-plus/icons-vue'
 import { formatDate } from '@/utils/date'
 import { systemApi } from '@/services/api'
 

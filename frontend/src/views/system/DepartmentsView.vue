@@ -82,7 +82,7 @@
       </el-table>
 
       <!-- 部门编辑对话框 -->
-      <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+      <el-dialog :title="textMap[dialogStatus]" v-model="dialogFormVisible">
         <el-form
           ref="dataForm"
           :rules="rules"

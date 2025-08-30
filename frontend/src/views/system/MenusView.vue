@@ -99,7 +99,7 @@
       </el-table>
 
       <!-- 菜单编辑对话框 -->
-      <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="600px">
+      <el-dialog :title="textMap[dialogStatus]" v-model="dialogFormVisible" width="600px">
         <el-form
           ref="dataForm"
           :rules="rules"

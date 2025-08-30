@@ -94,7 +94,7 @@ export const usePermissionStore = defineStore('permission', () => {
 
   // 动态获取组件
   const getComponent = (componentPath?: string) => {
-    if (!componentPath) return () => import('@/views/404.vue')
+    if (!componentPath) return () => import('@/views/error-page/404.vue')
     
     // 处理布局组件
     if (componentPath === 'Layout') {
@@ -127,7 +127,7 @@ export const usePermissionStore = defineStore('permission', () => {
       'monitor/logininfor/index': () => import('@/views/system/LoginLogsView.vue'),
     }
 
-    return componentMap[componentPath] || (() => import('@/views/404.vue'))
+    return componentMap[componentPath] || (() => import('@/views/error-page/404.vue'))
   }
 
   return {
