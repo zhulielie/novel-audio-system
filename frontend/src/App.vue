@@ -1,46 +1,14 @@
 <script setup lang="ts">
-import { RouterView, useRoute } from 'vue-router'
-import { ref, computed, onMounted } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import AppLayout from '@/components/AppLayout.vue'
-import { Loading } from '@element-plus/icons-vue'
+import { RouterView } from 'vue-router'
+import { useAppStore } from '@/stores/app'
 
-const route = useRoute()
-const authStore = useAuthStore()
-const loading = ref(true)
-
-// 初始化应用
-onMounted(async () => {
-  await authStore.initAuth()
-  loading.value = false
-})
-
-// 判断是否显示布局
-const showLayout = computed(() => {
-  return route.name !== 'login' && authStore.isAuthenticated
-})
+// 初始化应用设置
+const appStore = useAppStore()
 </script>
 
 <template>
   <div id="app">
-    <el-config-provider>
-      <!-- 加载状态 -->
-      <div v-if="loading" class="loading-container">
-        <el-icon size="48" class="loading-icon"><Loading /></el-icon>
-        <p>正在加载...</p>
-      </div>
-      
-      <!-- 主应用内容 -->
-      <template v-else>
-        <!-- 带布局的页面 -->
-        <AppLayout v-if="showLayout">
-          <RouterView />
-        </AppLayout>
-        
-        <!-- 不带布局的页面（如登录页） -->
-        <RouterView v-else />
-      </template>
-    </el-config-provider>
+    <RouterView />
   </div>
 </template>
 
