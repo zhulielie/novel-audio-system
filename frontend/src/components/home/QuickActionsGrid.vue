@@ -42,6 +42,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { Connection, Reading, Headset, Lightning, ArrowRight } from '@element-plus/icons-vue'
 import { apiService } from '@/services/api'
 
@@ -120,8 +121,17 @@ const actions = computed(() => [
 ])
 
 const handleActionClick = (action) => {
+  console.log('[QuickAction] 点击卡片:', action.title, '目标路由:', action.route)
   if (action.route) {
-    router.push(action.route)
+    try {
+      router.push(action.route)
+      console.log('[QuickAction] 跳转已触发:', action.route)
+    } catch (error) {
+      console.error('[QuickAction] 跳转失败:', action.route, error)
+      ElMessage.error(`跳转失败: ${action.route}`)
+    }
+  } else {
+    console.warn('[QuickAction] 该卡片未配置路由:', action)
   }
 }
 </script>

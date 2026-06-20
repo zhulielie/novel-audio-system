@@ -10,10 +10,10 @@
         <p class="hero-subtitle">您的专属小说数字化助手，让阅读、创作与音频生成更加智能高效</p>
         
         <div class="hero-actions">
-          <el-button type="primary" size="large" @click="$router.push('/novels/list')">
+          <el-button type="primary" size="large" @click="handleBrowseNovels">
             浏览小说库
           </el-button>
-          <el-button size="large" plain @click="$router.push('/crawler/integrated')">
+          <el-button size="large" plain @click="handleStartCrawler">
             开始爬取
           </el-button>
         </div>
@@ -38,6 +38,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { Reading, Document, Headset, CircleCheck } from '@element-plus/icons-vue'
 import { apiService } from '@/services/api'
 
@@ -47,6 +49,30 @@ const stats = ref([
   { key: 'audio', value: 0, label: '已生成音频', icon: 'Headset', type: 'warning' },
   { key: 'tts', value: 0, label: 'TTS 任务', icon: 'CircleCheck', type: 'info' }
 ])
+
+const router = useRouter()
+
+const handleBrowseNovels = () => {
+  console.log('[Hero] 点击浏览小说库，准备跳转 /novels/list')
+  try {
+    router.push('/novels/list')
+    console.log('[Hero] 跳转 /novels/list 已触发')
+  } catch (error) {
+    console.error('[Hero] 跳转失败:', error)
+    ElMessage.error('页面跳转失败，请查看控制台')
+  }
+}
+
+const handleStartCrawler = () => {
+  console.log('[Hero] 点击开始爬取，准备跳转 /crawler/integrated')
+  try {
+    router.push('/crawler/integrated')
+    console.log('[Hero] 跳转 /crawler/integrated 已触发')
+  } catch (error) {
+    console.error('[Hero] 跳转失败:', error)
+    ElMessage.error('页面跳转失败，请查看控制台')
+  }
+}
 
 const loadStats = async () => {
   try {
