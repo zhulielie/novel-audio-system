@@ -16,17 +16,10 @@ from .serializers import (
     NovelSourceSerializer
 )
 # 导入爬虫模块
-import sys
-import os
-
-_project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if _project_root not in sys.path:
-    sys.path.insert(0, _project_root)
-
 try:
     from crawlers.unified_crawler import UnifiedCrawler
     from crawlers.services import ConfigManager, ChapterExtractor, UniversalNovelDownloader
-    from integrated_novel_crawler import IntegratedNovelCrawler, CloudflareBlockedError
+    from crawlers.integrated_novel_crawler import IntegratedNovelCrawler, CloudflareBlockedError
 except ImportError as e:
     print(f"Warning: Could not import crawlers: {e}")
     IntegratedNovelCrawler = None
@@ -105,7 +98,7 @@ class NovelViewSet(viewsets.ModelViewSet):
             if IntegratedNovelCrawler is None:
                 return Response({
                     'error': '爬虫模块未找到',
-                    'message': '请确保 integrated_novel_crawler.py 存在'
+                    'message': '请确保 crawlers.integrated_novel_crawler 存在'
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             try:
@@ -197,7 +190,7 @@ class NovelViewSet(viewsets.ModelViewSet):
             if IntegratedNovelCrawler is None:
                 return Response({
                     'success': False,
-                    'error': '爬虫模块未找到，请确保 integrated_novel_crawler.py 存在'
+                    'error': '爬虫模块未找到，请确保 crawlers.integrated_novel_crawler 存在'
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             crawler = IntegratedNovelCrawler()
@@ -262,7 +255,7 @@ class NovelSourceRelationViewSet(viewsets.ModelViewSet):
             return Response({
                 'success': False,
                 'error': '爬虫模块未找到',
-                'message': '请确保 integrated_novel_crawler.py 存在'
+                'message': '请确保 crawlers.integrated_novel_crawler 存在'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         try:
@@ -340,7 +333,7 @@ class NovelSourceRelationViewSet(viewsets.ModelViewSet):
             return Response({
                 'success': False,
                 'error': '爬虫模块未找到',
-                'message': '请确保 integrated_novel_crawler.py 存在'
+                'message': '请确保 crawlers.integrated_novel_crawler 存在'
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         try:
@@ -533,7 +526,7 @@ class NovelSourceRelationViewSet(viewsets.ModelViewSet):
             if IntegratedNovelCrawler is None:
                 return Response({
                     'success': False,
-                    'error': '爬虫模块未找到，请确保 integrated_novel_crawler.py 存在'
+                    'error': '爬虫模块未找到，请确保 crawlers.integrated_novel_crawler 存在'
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             print(f'🚀 开始真正的智能爬取: {source_url}')
@@ -642,7 +635,7 @@ class NovelSourceRelationViewSet(viewsets.ModelViewSet):
             if IntegratedNovelCrawler is None:
                 return Response({
                     'success': False,
-                    'error': '爬虫模块未找到，请确保 integrated_novel_crawler.py 存在'
+                    'error': '爬虫模块未找到，请确保 crawlers.integrated_novel_crawler 存在'
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             crawler = IntegratedNovelCrawler()

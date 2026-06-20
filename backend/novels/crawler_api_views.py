@@ -27,11 +27,8 @@ from . import webbridge_helper
 import logging
 logger = logging.getLogger(__name__)
 
-# 导入爬虫及异常（项目根目录在 sys.path）
-project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
-from integrated_novel_crawler import IntegratedNovelCrawler, CloudflareBlockedError
+# 导入爬虫及异常
+from crawlers.integrated_novel_crawler import IntegratedNovelCrawler, CloudflareBlockedError
 
 
 class CrawlerAPIViewSet(viewsets.ViewSet):
@@ -690,7 +687,7 @@ def quick_crawl(request):
         project_root = os.path.dirname(os.path.dirname(current_dir))
         sys.path.insert(0, project_root)
 
-        from integrated_novel_crawler import IntegratedNovelCrawler
+        from crawlers.integrated_novel_crawler import IntegratedNovelCrawler
         crawler = IntegratedNovelCrawler()
 
         # 步骤1: 提取目录
@@ -879,7 +876,7 @@ def auto_crawl_next_chapters(request):
                 project_root = os.path.dirname(os.path.dirname(current_dir))
                 sys.path.insert(0, project_root)
                 
-                from integrated_novel_crawler import IntegratedNovelCrawler
+                from crawlers.integrated_novel_crawler import IntegratedNovelCrawler
                 crawler = IntegratedNovelCrawler()
                 
                 # 提取目录
