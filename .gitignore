@@ -23,6 +23,7 @@ wheels/
 # Django
 *.sqlite3
 db_new.sqlite3
+db_backup_*.sqlite3
 *.log
 local_settings.py
 .env
@@ -88,3 +89,6 @@ hetushu_*/
 hetushu_*_catalog.json
 hetushu_second.html
 mcp_demo_*/
+__pycache__/
+*.pyc
+*.pyo
