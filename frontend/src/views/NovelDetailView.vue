@@ -131,22 +131,44 @@ const handleSizeChange = (size: number) => {
 
 // 开始阅读 - 从第一章开始
 const startReading = () => {
-  router.push({
-    name: 'novel-reader',
-    params: { id: novel.value.id },
-    query: { chapter: 1 }
-  })
+  console.log('[NovelDetail] 点击开始阅读，小说ID:', novel.value?.id)
+  if (!novel.value?.id) {
+    ElMessage.warning('小说信息未加载，请稍后重试')
+    return
+  }
+  try {
+    router.push({
+      name: 'NovelReader',
+      params: { id: novel.value.id },
+      query: { chapter: 1 }
+    })
+    console.log('[NovelDetail] 已触发阅读器跳转，小说ID:', novel.value.id)
+  } catch (error) {
+    console.error('[NovelDetail] 跳转阅读器失败:', error)
+    ElMessage.error('打开阅读器失败')
+  }
 }
 
 // 阅读章节 - 跳转到新的阅读器
 const readChapter = (chapter: Chapter) => {
+  console.log('[NovelDetail] 点击阅读章节:', chapter.title, 'sort:', chapter.chapter_sort_number)
+  if (!novel.value?.id) {
+    ElMessage.warning('小说信息未加载，请稍后重试')
+    return
+  }
   // 使用章节的实际排序编号，而不是当前页面中的索引
   const chapterNumber = chapter.chapter_sort_number || 1
-  router.push({
-    name: 'novel-reader',
-    params: { id: novel.value.id },
-    query: { chapter: chapterNumber }
-  })
+  try {
+    router.push({
+      name: 'NovelReader',
+      params: { id: novel.value.id },
+      query: { chapter: chapterNumber }
+    })
+    console.log('[NovelDetail] 已触发章节阅读，小说ID:', novel.value.id, '章节:', chapterNumber)
+  } catch (error) {
+    console.error('[NovelDetail] 跳转章节阅读失败:', error)
+    ElMessage.error('打开章节阅读失败')
+  }
 }
 
 // 获取章节内容（如果需要单独获取）

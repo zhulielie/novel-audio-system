@@ -11,6 +11,7 @@ import {
   Calendar,
   User,
   View,
+  Reading,
 } from '@element-plus/icons-vue'
 import type { Novel, NovelForm, NovelSource } from '@/types'
 import { apiService } from '@/services/api'
@@ -158,9 +159,20 @@ const saveNovel = async () => {
   }
 }
 
-// 阅读小说
-const readNovel = (novel: Novel) => {
+// 查看小说详情
+const viewNovelDetail = (novel: Novel) => {
+  console.log('[Novels] 查看小说详情:', novel.title, 'ID:', novel.id)
   router.push(`/novels/${novel.id}`)
+}
+
+// 开始阅读小说
+const startReadingNovel = (novel: Novel) => {
+  console.log('[Novels] 开始阅读小说:', novel.title, 'ID:', novel.id)
+  router.push({
+    name: 'NovelReader',
+    params: { id: novel.id },
+    query: { chapter: 1 }
+  })
 }
 
 // 删除小说
@@ -289,15 +301,23 @@ onMounted(() => {
               class="novel-card"
             >
               <div class="novel-header">
-                <div class="novel-title">{{ novel.title }}</div>
+                <div class="novel-title" @click="viewNovelDetail(novel)">{{ novel.title }}</div>
                 <div class="novel-actions">
                   <el-button
-                    type="success"
+                    type="info"
                     :icon="View"
                     size="small"
                     circle
-                    @click="readNovel(novel)"
-                    title="阅读小说"
+                    @click="viewNovelDetail(novel)"
+                    title="小说详情"
+                  />
+                  <el-button
+                    type="success"
+                    :icon="Reading"
+                    size="small"
+                    circle
+                    @click="startReadingNovel(novel)"
+                    title="开始阅读"
                   />
                   <el-button
                     type="primary"
@@ -318,7 +338,7 @@ onMounted(() => {
                 </div>
               </div>
               
-              <div class="novel-meta">
+              <div class="novel-meta" @click="viewNovelDetail(novel)">
                 <div class="meta-item">
                   <el-icon><User /></el-icon>
                   <span>{{ novel.author }}</span>
@@ -555,6 +575,12 @@ onMounted(() => {
   flex: 1;
   margin-right: 12px;
   line-height: 1.4;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.novel-title:hover {
+  color: var(--primary-600);
 }
 
 .novel-actions {
@@ -572,6 +598,7 @@ onMounted(() => {
   display: flex;
   gap: 16px;
   margin-bottom: 14px;
+  cursor: pointer;
 }
 
 .meta-item {
