@@ -881,6 +881,8 @@ watch(readingMode, (newMode) => {
   font-size: 16px;
   line-height: 1.6;
   transition: all 0.3s ease;
+  /* 抵消 AdminLayout .app-main 的 24px padding，使阅读器铺满内容区 */
+  margin: -24px;
 }
 
 /* 头部样式 */
