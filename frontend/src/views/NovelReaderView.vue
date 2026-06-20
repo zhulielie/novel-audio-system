@@ -881,22 +881,26 @@ watch(readingMode, (newMode) => {
   font-size: 16px;
   line-height: 1.6;
   transition: all 0.3s ease;
-  /* 抵消 AdminLayout .app-main 的 24px padding，使阅读器铺满内容区 */
-  margin: -24px;
+  /* 为 fixed header 留出空间 */
+  padding-top: 56px;
 }
 
 /* 头部样式 */
 .reader-header {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  top: 64px;
+  left: var(--sidebar-width, 210px);
+  right: 0;
   z-index: 100;
   background: white;
   border-bottom: 1px solid #e0e0e0;
   padding: 12px 20px;
+  height: 56px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-sizing: border-box;
 }
 
 .header-left {

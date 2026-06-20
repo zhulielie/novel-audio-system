@@ -83,7 +83,11 @@
       <tags-view v-if="needTagsView" />
 
       <!-- 主要内容 -->
-      <el-main class="app-main">
+      <el-main
+        class="app-main"
+        :class="{ 'no-padding': noMainPadding }"
+        :style="{ '--sidebar-width': sidebarWidth }"
+      >
         <transition name="fade-transform" mode="out-in">
           <router-view :key="key" />
         </transition>
@@ -140,6 +144,7 @@ const activeMenu = computed(() => {
 })
 
 const key = computed(() => route.path)
+const noMainPadding = computed(() => route.meta?.noMainPadding === true)
 
 // 方法
 const toggleSidebar = () => {
@@ -346,6 +351,10 @@ watch(
   overflow-x: hidden;
   padding: 24px;
   background: var(--bg-body);
+
+  &.no-padding {
+    padding: 0;
+  }
 }
 
 // 过渡动画

@@ -157,7 +157,8 @@ export const constantRoutes: RouteRecordRaw[] = [
         component: () => import('@/views/NovelReaderView.vue'),
         meta: {
           title: '阅读小说',
-          hidden: true
+          hidden: true,
+          noMainPadding: true
         }
       }
     ]
