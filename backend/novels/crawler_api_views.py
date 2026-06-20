@@ -177,7 +177,7 @@ class CrawlerAPIViewSet(viewsets.ViewSet):
     
     @action(detail=False, methods=['post'])
     def complete_manual_bypass(self, request):
-        """用户完成浏览器验证后，获取 cookies 并重新提取目录"""
+        """用户完成浏览器验证后，直接在浏览器 DOM 中提取目录"""
         source_url = request.data.get('source_url', '').strip()
         session = request.data.get('session', '').strip()
         
@@ -195,21 +195,11 @@ class CrawlerAPIViewSet(viewsets.ViewSet):
         )
         
         try:
+            # 直接在用户浏览器中解析已渲染好的页面目录
+            catalog_data = webbridge_helper.extract_catalog_from_browser(session, source_url)
             cookies = webbridge_helper.get_cookies(session)
-            if not cookies:
-                task.status = 'failed'
-                task.error_message = '未能从浏览器获取有效 cookies'
-                task.save()
-                return Response({
-                    'success': False,
-                    'error': '未能从浏览器获取有效 cookies，请确认已完成验证'
-                }, status=status.HTTP_400_BAD_REQUEST)
             
-            crawler = self._get_crawler()
-            crawler.set_cookies(cookies)
-            catalog_data = crawler.extract_catalog(source_url)
-            
-            if catalog_data:
+            if catalog_data and catalog_data.get('chapters'):
                 task.status = 'completed'
                 task.completed_at = timezone.now()
                 task.total_items = len(catalog_data.get('chapters', []))
@@ -228,24 +218,13 @@ class CrawlerAPIViewSet(viewsets.ViewSet):
             else:
                 task.status = 'failed'
                 task.completed_at = timezone.now()
-                task.error_message = '使用浏览器 cookies 仍无法提取目录'
+                task.error_message = '未能在浏览器页面中解析到章节，请确认页面已正常加载'
                 task.save()
                 return Response({
                     'success': False,
-                    'error': '使用浏览器 cookies 仍无法提取目录，请确认验证已成功'
+                    'error': '未能在浏览器页面中解析到章节，请确认页面已正常加载'
                 }, status=status.HTTP_400_BAD_REQUEST)
                 
-        except CloudflareBlockedError as e:
-            task.status = 'failed'
-            task.completed_at = timezone.now()
-            task.error_message = str(e)
-            task.save()
-            return Response({
-                'success': False,
-                'needs_manual_bypass': True,
-                'error': str(e),
-                'message': '仍然被 Cloudflare 拦截，请确认已在浏览器中完成验证'
-            }, status=status.HTTP_403_FORBIDDEN)
         except Exception as e:
             task.status = 'failed'
             task.completed_at = timezone.now()
