@@ -47,6 +47,7 @@ frontend/.vite/
 backend/media/
 backend/staticfiles/
 backend/audios/
+e2e_screenshots/
 
 # IDE
 .vscode/

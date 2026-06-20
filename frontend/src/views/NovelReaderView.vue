@@ -254,10 +254,9 @@ const loadUserSettings = async () => {
       lineHeight.value = settings.line_height ?? 1.6
       backgroundColor.value = settings.background_color ?? 'white'
       readingMode.value = settings.reading_mode ?? 'page'
-      console.log('✅ 用户阅读设置加载成功:', settings)
     }
   } catch (error) {
-    console.error('❌ 加载用户阅读设置失败:', error)
+    console.error('加载用户阅读设置失败:', error)
     // 使用默认设置
   }
 }
@@ -277,7 +276,6 @@ const saveUserSettings = async () => {
     const response = await apiService.post('/novels/reading-settings/', settings)
     if (response.success !== false) {
       ElMessage.success('阅读设置保存成功')
-      console.log('✅ 用户阅读设置保存成功:', settings)
     } else {
       ElMessage.error('阅读设置保存失败')
     }
@@ -298,22 +296,16 @@ const fetchNovelData = async () => {
     const novelId = Number(route.params.id)
     const startChapter = Number(route.query.chapter) || 1
     
-    console.log('开始获取小说数据...', { novelId, startChapter })
-    
     // 获取小说信息
     const novelResponse = await apiService.get(`/novels/${novelId}/`)
-    console.log('小说API完整响应:', novelResponse)
     // 直接使用响应对象，不是 .data
     novel.value = novelResponse.data || novelResponse
-    console.log('小说信息:', novel.value)
     
     // 获取章节列表
     const chaptersResponse = await apiService.get(`/novels/${novelId}/chapters/`)
-    console.log('章节API完整响应:', chaptersResponse)
     
     // 处理不同的响应格式
     let chaptersData = chaptersResponse.data || chaptersResponse
-    console.log('章节数据:', chaptersData)
     
     if (chaptersData && chaptersData.results) {
       chapters.value = chaptersData.results
@@ -323,8 +315,6 @@ const fetchNovelData = async () => {
       chapters.value = []
     }
     
-    console.log('解析后的章节数据:', chapters.value)
-    console.log('章节数量:', chapters.value.length)
     
     // 设置初始章节
     if (chapters.value.length > 0) {
@@ -354,7 +344,6 @@ const checkAndLoadNewChapters = async () => {
   
   // 如果是最后一章，立即检查并爬取新章节
   if (currentChapterNum === totalChapters) {
-    console.log(`当前是最后一章(第${currentChapterNum}章)，开始自动爬取新章节...`)
     
     try {
       // 先检查数据库中是否已有新章节
@@ -362,7 +351,6 @@ const checkAndLoadNewChapters = async () => {
       const existingChapters = checkResponse.data?.results || checkResponse.data || checkResponse
       
       if (existingChapters.length > totalChapters) {
-        console.log(`数据库中发现新章节！从${totalChapters}章增加到${existingChapters.length}章`)
         
         // 更新章节列表
         chapters.value = existingChapters.map(chapter => ({
@@ -378,7 +366,6 @@ const checkAndLoadNewChapters = async () => {
       }
       
       // 如果数据库中没有新章节，则自动爬取
-      console.log('数据库中没有新章节，开始自动爬取...')
       ElMessage.info('正在自动爬取新章节，请稍候...')
       
       const crawlResponse = await apiService.post('/crawler/auto-crawl/', {
@@ -387,17 +374,14 @@ const checkAndLoadNewChapters = async () => {
         crawl_ahead: crawlAhead.value || 3
       })
       
-      console.log('爬取API响应:', crawlResponse)
       
       if (crawlResponse?.data?.success || crawlResponse?.success) {
         const responseData = crawlResponse.data || crawlResponse
-        console.log('自动爬取任务启动成功:', responseData)
         ElMessage.success('自动爬取任务已启动，正在后台下载新章节...')
         
         // 等待一段时间后重新检查章节
         setTimeout(async () => {
           try {
-            console.log('重新检查章节列表...')
             const newCheckResponse = await apiService.get(`/novels/${novel.value.id}/chapters/`)
             const updatedChapters = newCheckResponse.data?.results || newCheckResponse.data || newCheckResponse
             
@@ -438,7 +422,6 @@ const loadCurrentChapter = async () => {
   
   try {
     const chapter = chapters.value[currentChapterIndex.value]
-    console.log('加载章节:', chapter)
     
     // 如果章节已经有内容，直接使用
     if (chapter.content) {
@@ -487,7 +470,6 @@ const loadChapterForScroll = async (index) => {
   
   try {
     const chapter = chapters.value[index]
-    console.log('连续模式加载章节:', chapter)
     
     // 如果章节已经有内容，直接使用
     if (chapter.content) {
@@ -501,7 +483,6 @@ const loadChapterForScroll = async (index) => {
       loadedChapters.value.push(response.data || response)
     } catch (apiError) {
       // 如果API失败，使用已有的章节数据
-      console.log('API调用失败，使用现有章节数据:', apiError)
       loadedChapters.value.push(chapter)
     }
   } catch (error) {
@@ -542,55 +523,34 @@ const nextChapter = async () => {
 
 // 设置阅读模式
 const setReadingMode = async (mode) => {
-  console.log('🔧 设置阅读模式:', mode)
   readingMode.value = mode
   
   if (mode === 'scroll') {
-    console.log('📜 进入连续模式')
-    console.log('📜 当前已加载章节数:', loadedChapters.value.length)
     
     if (loadedChapters.value.length === 0) {
-      console.log('📜 开始加载初始章节...')
       await loadInitialChapters()
     } else {
-      console.log('📜 章节已加载，跳过初始化')
     }
     
     // 确保滚动容器存在
     nextTick(() => {
       if (scrollContainer.value) {
-        console.log('✅ 滚动容器已找到')
-        console.log('✅ 滚动监听器应该已绑定到 @scroll="handleScroll"')
       } else {
-        console.log('❌ 滚动容器未找到')
       }
     })
   } else {
-    console.log('📄 进入翻页模式')
   }
 }
 
 // 连续模式：滚动处理
 const handleScroll = async () => {
-  console.log('🔄 滚动事件触发')
   
   if (!scrollContainer.value) {
-    console.log('❌ 滚动容器不存在')
     return
   }
   
   const container = scrollContainer.value
   const { scrollTop, scrollHeight, clientHeight } = container
-  
-  console.log('📊 滚动数据:', {
-    scrollTop: Math.round(scrollTop),
-    scrollHeight: Math.round(scrollHeight),
-    clientHeight: Math.round(clientHeight),
-    distanceFromBottom: Math.round(scrollHeight - scrollTop - clientHeight),
-    hasMoreChapters: hasMoreChapters.value,
-    loadingMore: loadingMore.value,
-    loadedChaptersCount: loadedChapters.value.length
-  })
   
   // 更新进度条
   scrollProgress.value = (scrollTop / (scrollHeight - clientHeight)) * 100
@@ -601,22 +561,16 @@ const handleScroll = async () => {
   // 滚动到底部时加载更多
   const distanceFromBottom = scrollHeight - scrollTop - clientHeight
   if (distanceFromBottom <= 100) {
-    console.log('📍 接近底部，距离底部:', Math.round(distanceFromBottom), 'px')
     
     if (hasMoreChapters.value) {
-      console.log('✅ 有更多章节可加载')
       if (!loadingMore.value) {
-        console.log('🚀 开始加载更多章节')
         await loadMoreChapters()
       } else {
-        console.log('⏳ 正在加载中，跳过')
       }
     } else {
-      console.log('🔚 没有更多章节了')
       
       // 连续模式下，当没有更多章节时，尝试自动爬取新章节
       if (autoCrawlEnabled.value && !loadingMore.value) {
-        console.log('🔍 连续模式：尝试自动爬取新章节...')
         loadingMore.value = true
         
         try {
@@ -627,14 +581,11 @@ const handleScroll = async () => {
           const loadedCount = loadedChapters.value.length
           
           if (totalChapters > loadedCount) {
-            console.log('🎉 发现新章节！重新设置hasMoreChapters为true')
             hasMoreChapters.value = true
             
             // 立即加载新章节
-            console.log('🚀 立即加载新发现的章节')
             await loadMoreChapters()
           } else {
-            console.log('😔 没有发现新章节')
           }
         } catch (error) {
           console.error('❌ 自动爬取失败:', error)
@@ -666,42 +617,25 @@ const updateCurrentScrollChapter = () => {
 
 // 连续模式：加载更多章节
 const loadMoreChapters = async () => {
-  console.log('📚 loadMoreChapters 被调用')
-  console.log('📚 当前状态:', {
-    loadingMore: loadingMore.value,
-    hasMoreChapters: hasMoreChapters.value,
-    loadedChaptersCount: loadedChapters.value.length,
-    totalChaptersCount: chapters.value.length
-  })
-  
   if (loadingMore.value || !hasMoreChapters.value) {
-    console.log('❌ 跳过加载:', {
-      loadingMore: loadingMore.value,
-      hasMoreChapters: hasMoreChapters.value
-    })
     return
   }
   
   loadingMore.value = true
-  console.log('🔄 开始加载更多章节...')
   
   try {
     const nextIndex = loadedChapters.value.length
     const loadCount = 2 // 每次加载2章
     
-    console.log('📖 加载更多章节，当前已加载:', nextIndex, '总章节数:', chapters.value.length)
     
     for (let i = nextIndex; i < Math.min(nextIndex + loadCount, chapters.value.length); i++) {
-      console.log('📄 加载第', i + 1, '章')
       await loadChapterForScroll(i)
     }
     
     hasMoreChapters.value = nextIndex + loadCount < chapters.value.length
-    console.log('✅ 加载完成，还有更多章节:', hasMoreChapters.value)
     
     // 连续模式下检查自动爬取 - 优化逻辑
     if (autoCrawlEnabled.value && !hasMoreChapters.value) {
-      console.log('🤖 连续模式：已加载完所有现有章节，检查是否需要自动爬取新章节')
       
       // 使用简化的检查逻辑
       await checkAndLoadNewChapters()
@@ -709,7 +643,6 @@ const loadMoreChapters = async () => {
       // 如果检测到新章节，重新设置hasMoreChapters
       if (chapters.value.length > nextIndex + loadCount) {
         hasMoreChapters.value = true
-        console.log('🆕 检测到新章节，重新设置hasMoreChapters为true')
       }
     }
   } catch (error) {
@@ -717,7 +650,6 @@ const loadMoreChapters = async () => {
     ElMessage.error('加载失败')
   } finally {
     loadingMore.value = false
-    console.log('🏁 loadMoreChapters 完成')
   }
 }
 
@@ -734,7 +666,6 @@ const checkAndAutoCrawl = async () => {
     // 避免重复爬取
     if (lastCrawlChapter.value >= currentChapterNum) return
     
-    console.log(`触发自动爬取: 当前第${currentChapterNum}章，总共${totalChapters}章，需要提前爬取${crawlAhead.value}章`)
     
     try {
       crawlingStatus.value = '正在自动爬取新章节...'
@@ -748,13 +679,11 @@ const checkAndAutoCrawl = async () => {
       
       if (response.data.success) {
         crawlingStatus.value = response.data.message || '自动爬取任务已启动'
-        console.log('自动爬取任务启动:', response.data)
         ElMessage.success('正在后台爬取新章节...')
         
         // 等待一段时间后重新获取章节列表
         setTimeout(async () => {
           try {
-            console.log('重新获取章节列表...')
             await fetchNovelData(novel.value.id, currentChapterNum)
             ElMessage.success('新章节已更新！')
             crawlingStatus.value = ''
@@ -794,7 +723,6 @@ const refreshChapterList = async () => {
       chapters.value = chaptersData
     }
     
-    console.log('章节列表已刷新，当前章节数:', chapters.value.length)
   } catch (error) {
     console.error('刷新章节列表失败:', error)
   }

@@ -25,3 +25,5 @@ playwright>=1.40.0
 django-q2>=1.6.0
 cloudscraper
 edge-tts
+pytest>=8.0.0
+pytest-django>=4.9.0

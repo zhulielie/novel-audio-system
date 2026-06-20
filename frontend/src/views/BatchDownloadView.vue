@@ -507,12 +507,9 @@ export default {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
         const wsUrl = `${protocol}//${window.location.host}/ws/batch-download/`
         
-        console.log('🔌 正在连接WebSocket:', wsUrl)
-        
         ws.value = new WebSocket(wsUrl)
         
         ws.value.onopen = () => {
-          console.log('✅ WebSocket连接成功')
           wsConnected.value = true
           wsReconnectAttempts.value = 0
           
@@ -529,7 +526,6 @@ export default {
         ws.value.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data)
-            console.log('📨 收到WebSocket消息:', data)
             
             switch (data.type) {
               case 'task_update':
@@ -542,10 +538,9 @@ export default {
                 handleTaskError(data.data)
                 break
               case 'auth_success':
-                console.log('🔐 WebSocket认证成功')
                 break
               default:
-                console.log('❓ 未知消息类型:', data.type)
+                console.warn('未知WebSocket消息类型:', data.type)
             }
           } catch (error) {
             console.error('❌ 解析WebSocket消息失败:', error)
@@ -553,14 +548,12 @@ export default {
         }
         
         ws.value.onclose = (event) => {
-          console.log('🔌 WebSocket连接关闭:', event.code, event.reason)
           wsConnected.value = false
           
           // 自动重连
           if (wsReconnectAttempts.value < maxReconnectAttempts) {
             wsReconnectAttempts.value++
             const delay = Math.min(1000 * Math.pow(2, wsReconnectAttempts.value), 10000)
-            console.log(`🔄 ${delay}ms后尝试重连 (${wsReconnectAttempts.value}/${maxReconnectAttempts})`)
             setTimeout(connectWebSocket, delay)
           } else {
             console.error('❌ WebSocket重连失败，请刷新页面重试')

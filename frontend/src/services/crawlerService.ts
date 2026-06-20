@@ -216,7 +216,6 @@ export class CrawlerService {
   } = {}): Promise<BatchImportResult> {
     try {
       // 1. 先分析URL
-      console.log('🔍 分析小说URL...')
       const analysis = await this.analyzeUrl(url)
 
       if (!analysis.success) {
@@ -227,7 +226,6 @@ export class CrawlerService {
       }
 
       // 2. 执行批量导入
-      console.log('🚀 开始批量导入...')
       const importParams: BatchImportParams = {
         source_url: url,
         novel_title: analysis.title || '未知小说',

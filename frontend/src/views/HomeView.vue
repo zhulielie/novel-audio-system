@@ -60,7 +60,6 @@ const refreshAllData = async () => {
 
 const startAutoRefresh = () => {
   refreshTimer.value = setInterval(() => {
-    console.log('自动刷新数据...')
   }, 60000)
 }
 

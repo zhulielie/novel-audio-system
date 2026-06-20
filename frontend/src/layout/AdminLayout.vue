@@ -19,7 +19,6 @@
           background-color="#ffffff"
           text-color="#475569"
           active-text-color="#6366f1"
-          router
         >
           <sidebar-item
             v-for="route in menuRoutes"
@@ -153,7 +152,6 @@ const toggleSidebar = () => {
 
 const handleSettingsChange = (settings: any) => {
   // 处理设置变更
-  console.log('Settings changed:', settings)
 }
 
 const logout = async () => {

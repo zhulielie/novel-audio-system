@@ -1,11 +1,19 @@
 <template>
   <div v-if="!item.hidden && !item.meta?.hidden">
     <template v-if="hasOneShowingChild(item.children, item) && (!onlyOneChild.children || onlyOneChild.noShowingChildren) && !item.alwaysShow">
-      <app-link v-if="onlyOneChild.meta" :to="resolvePath(onlyOneChild.path)">
+      <app-link v-if="onlyOneChild.meta && isExternal(resolvePath(onlyOneChild.path))" :to="resolvePath(onlyOneChild.path)">
         <el-menu-item :index="resolvePath(onlyOneChild.path)" :class="{'submenu-title-noDropdown': !isNest}">
           <item :icon="onlyOneChild.meta.icon || (item.meta && item.meta.icon)" :title="onlyOneChild.meta.title" />
         </el-menu-item>
       </app-link>
+      <el-menu-item
+        v-else-if="onlyOneChild.meta"
+        ref="menuItemRef"
+        :index="resolvePath(onlyOneChild.path)"
+        :class="{'submenu-title-noDropdown': !isNest}"
+      >
+        <item :icon="onlyOneChild.meta.icon || (item.meta && item.meta.icon)" :title="onlyOneChild.meta.title" />
+      </el-menu-item>
     </template>
 
     <el-sub-menu v-else ref="subMenu" :index="resolvePath(item.path)" popper-append-to-body>
@@ -25,7 +33,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted, onUpdated, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { isExternal } from '@/utils/validate'
 import Item from './Item.vue'
 import AppLink from './Link.vue'
@@ -41,7 +50,11 @@ const props = withDefaults(defineProps<Props>(), {
   basePath: ''
 })
 
+const router = useRouter()
+const menuItemRef = ref<any>(null)
 const onlyOneChild = ref<any>({})
+
+let clickHandler: ((e: Event) => void) | null = null
 
 const hasOneShowingChild = (children: any[] = [], parent: any) => {
   const showingChildren = children.filter((item: any) => {
@@ -75,6 +88,50 @@ const resolvePath = (routePath: string) => {
   return path.resolve(props.basePath, routePath)
 }
 
+const navigate = (route: any) => {
+  const targetPath = resolvePath(route.path)
+  if (isExternal(targetPath)) {
+    window.open(targetPath, '_blank')
+    return
+  }
+  if (targetPath === router.currentRoute.value.path) {
+    return
+  }
+  router.push(targetPath)
+}
+
+const detachClickListener = () => {
+  if (clickHandler && menuItemRef.value?.$el) {
+    menuItemRef.value.$el.removeEventListener('click', clickHandler, true)
+    clickHandler = null
+  }
+}
+
+const attachClickListener = () => {
+  detachClickListener()
+  const el = menuItemRef.value?.$el
+  if (!el) return
+  clickHandler = (e: Event) => {
+    e.stopPropagation()
+    if (onlyOneChild.value?.meta) {
+      navigate(onlyOneChild.value)
+    }
+  }
+  el.addEventListener('click', clickHandler, true)
+}
+
+onMounted(() => {
+  nextTick(() => attachClickListener())
+})
+
+onUpdated(() => {
+  nextTick(() => attachClickListener())
+})
+
+onUnmounted(() => {
+  detachClickListener()
+})
+
 const path = {
   resolve: (basePath: string, relativePath: string) => {
     if (relativePath.startsWith('/')) {
@@ -104,6 +161,7 @@ const path = {
   line-height: 44px;
   font-weight: 500;
   transition: all 0.2s ease;
+  cursor: pointer;
 
   &:hover {
     background-color: var(--primary-50) !important;

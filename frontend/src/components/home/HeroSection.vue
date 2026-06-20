@@ -53,25 +53,11 @@ const stats = ref([
 const router = useRouter()
 
 const handleBrowseNovels = () => {
-  console.log('[Hero] 点击浏览小说库，准备跳转 /novels/list')
-  try {
-    router.push('/novels/list')
-    console.log('[Hero] 跳转 /novels/list 已触发')
-  } catch (error) {
-    console.error('[Hero] 跳转失败:', error)
-    ElMessage.error('页面跳转失败，请查看控制台')
-  }
+  router.push('/novels/list')
 }
 
 const handleStartCrawler = () => {
-  console.log('[Hero] 点击开始爬取，准备跳转 /crawler/integrated')
-  try {
-    router.push('/crawler/integrated')
-    console.log('[Hero] 跳转 /crawler/integrated 已触发')
-  } catch (error) {
-    console.error('[Hero] 跳转失败:', error)
-    ElMessage.error('页面跳转失败，请查看控制台')
-  }
+  router.push('/crawler/integrated')
 }
 
 const loadStats = async () => {

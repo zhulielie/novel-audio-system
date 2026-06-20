@@ -161,13 +161,11 @@ const saveNovel = async () => {
 
 // 查看小说详情
 const viewNovelDetail = (novel: Novel) => {
-  console.log('[Novels] 查看小说详情:', novel.title, 'ID:', novel.id)
   router.push(`/novels/${novel.id}`)
 }
 
 // 开始阅读小说
 const startReadingNovel = (novel: Novel) => {
-  console.log('[Novels] 开始阅读小说:', novel.title, 'ID:', novel.id)
   router.push({
     name: 'NovelReader',
     params: { id: novel.id },

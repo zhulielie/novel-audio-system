@@ -41,9 +41,6 @@ const batchImportForm = ref<{
 })
 const availableSources = ref<any[]>([])
 
-// 测试对话框
-const testDialogVisible = ref(false)
-
 const novelId = Number(route.params.id)
 
 // 排序相关
@@ -70,9 +67,6 @@ const fetchNovelDetail = async () => {
     novel.value = novelResponse.data || novelResponse
     const chaptersData = chaptersResponse.data || chaptersResponse
 
-    // 调试日志
-    console.log('章节API响应:', chaptersData)
-
     let newChapters = Array.isArray(chaptersData) ? chaptersData : chaptersData.results || []
     totalChapters.value = chaptersData.count || chaptersData.total || newChapters.length
 
@@ -90,7 +84,6 @@ const fetchNovelDetail = async () => {
               firstLine.match(/^第\d+章/) ||
               firstLine.match(/^第[一二三四五六七八九十百千\d]+章/)) {
             processedChapter.title = firstLine
-            console.log(`从内容提取标题: ${firstLine} (原标题: ${chapter.title})`)
           }
         }
       }
@@ -99,9 +92,6 @@ const fetchNovelDetail = async () => {
     })
 
     chapters.value = newChapters
-
-    console.log('最终章节数据:', chapters.value)
-    console.log('总章节数:', totalChapters.value)
   } catch (error) {
     console.error('获取小说详情失败:', error)
     chapters.value = []
@@ -134,44 +124,30 @@ const handleSizeChange = (size: number) => {
 
 // 开始阅读 - 从第一章开始
 const startReading = () => {
-  console.log('[NovelDetail] 点击开始阅读，小说ID:', novel.value?.id)
   if (!novel.value?.id) {
     ElMessage.warning('小说信息未加载，请稍后重试')
     return
   }
-  try {
-    router.push({
-      name: 'NovelReader',
-      params: { id: novel.value.id },
-      query: { chapter: 1 }
-    })
-    console.log('[NovelDetail] 已触发阅读器跳转，小说ID:', novel.value.id)
-  } catch (error) {
-    console.error('[NovelDetail] 跳转阅读器失败:', error)
-    ElMessage.error('打开阅读器失败')
-  }
+  router.push({
+    name: 'NovelReader',
+    params: { id: novel.value.id },
+    query: { chapter: 1 }
+  })
 }
 
 // 阅读章节 - 跳转到新的阅读器
 const readChapter = (chapter: Chapter) => {
-  console.log('[NovelDetail] 点击阅读章节:', chapter.title, 'sort:', chapter.chapter_sort_number)
   if (!novel.value?.id) {
     ElMessage.warning('小说信息未加载，请稍后重试')
     return
   }
   // 使用章节的实际排序编号，而不是当前页面中的索引
   const chapterNumber = chapter.chapter_sort_number || 1
-  try {
-    router.push({
-      name: 'NovelReader',
-      params: { id: novel.value.id },
-      query: { chapter: chapterNumber }
-    })
-    console.log('[NovelDetail] 已触发章节阅读，小说ID:', novel.value.id, '章节:', chapterNumber)
-  } catch (error) {
-    console.error('[NovelDetail] 跳转章节阅读失败:', error)
-    ElMessage.error('打开章节阅读失败')
-  }
+  router.push({
+    name: 'NovelReader',
+    params: { id: novel.value.id },
+    query: { chapter: chapterNumber }
+  })
 }
 
 // 获取章节内容（如果需要单独获取）
@@ -235,69 +211,18 @@ const formatChapterContent = (content: string) => {
 // 获取可用的小说来源
 const fetchAvailableSources = async () => {
   try {
-    console.log('开始获取小说来源...')
     const response = await apiService.get('/novel-sources/')
-    console.log('小说来源API响应:', response)
-    
     // Django REST framework分页响应结构：{count, next, previous, results}
     // 由于响应拦截器返回response.data，所以这里response就是分页数据
     availableSources.value = (response as any).results || (response as any).data || response || []
-    console.log('解析后的小说来源:', availableSources.value)
-    console.log('小说来源数量:', availableSources.value.length)
   } catch (error: any) {
     console.error('获取小说来源失败:', error)
     ElMessage.error('获取小说来源失败: ' + (error.message || '未知错误'))
   }
 }
 
-// 测试对话框显示
-const testDialog = () => {
-  console.log('测试对话框被点击')
-  ElMessage.success('测试消息：Element Plus 组件正常工作')
-  
-  // 同时显示两个对话框进行对比
-  testDialogVisible.value = true
-  batchImportVisible.value = true
-  
-  console.log('设置 testDialogVisible:', testDialogVisible.value)
-  console.log('设置 batchImportVisible:', batchImportVisible.value)
-  
-  // 等待 DOM 更新后检查对话框
-  nextTick(() => {
-    const dialogs = document.querySelectorAll('.el-dialog')
-    console.log('页面中的所有 el-dialog 元素数量:', dialogs.length)
-    
-    dialogs.forEach((dialog, index) => {
-      const style = window.getComputedStyle(dialog)
-      const wrapper = dialog.closest('.el-dialog__wrapper')
-      const wrapperStyle = wrapper ? window.getComputedStyle(wrapper) : null
-      
-      console.log(`对话框 ${index}:`)
-      console.log('  - display:', style.display)
-      console.log('  - visibility:', style.visibility)
-      console.log('  - wrapper display:', wrapperStyle ? wrapperStyle.display : 'no wrapper')
-      console.log('  - 内容预览:', dialog.textContent?.substring(0, 50))
-      
-      // 如果是批量导入对话框
-      if (dialog.textContent?.includes('智能批量导入')) {
-        console.log('  - *** 这是批量导入对话框 ***')
-        if (wrapper) {
-          ;(wrapper as HTMLElement).style.display = 'flex'
-          ;(wrapper as HTMLElement).style.visibility = 'visible'
-          ;(wrapper as HTMLElement).style.opacity = '1'
-          ;(wrapper as HTMLElement).style.zIndex = '9999'
-          console.log('  - 已强制修改样式')
-        }
-      }
-    })
-  })
-}
-
 // 打开批量导入对话框
 const openBatchImportDialog = async () => {
-  console.log('打开批量导入对话框')
-  console.log('当前可用来源:', availableSources.value)
-  
   // 如果还没有获取来源，先获取
   if (availableSources.value.length === 0) {
     await fetchAvailableSources()
@@ -315,13 +240,9 @@ const openBatchImportDialog = async () => {
   // 用nextTick确保 DOM 更新后再执行验证
   await nextTick()
   
-  console.log('设置后 batchImportVisible 值:', batchImportVisible.value)
-  
   // 强制刷新显示（在下一个事件循环中）
   setTimeout(() => {
-    console.log('延迟验证 batchImportVisible 值:', batchImportVisible.value)
     const dialog = document.querySelector('.batch-import-dialog')
-    console.log('找到批量导入对话框元素:', dialog)
     if (dialog) {
       const wrapper = dialog.closest('.el-dialog__wrapper') || dialog.parentElement
       if (wrapper) {
@@ -329,7 +250,6 @@ const openBatchImportDialog = async () => {
         ;(wrapper as HTMLElement).style.visibility = 'visible'
         ;(wrapper as HTMLElement).style.opacity = '1'
         ;(wrapper as HTMLElement).style.zIndex = '3000'
-        console.log('已强制设置对话框样式')
       }
     }
   }, 100)
@@ -443,7 +363,7 @@ onMounted(() => {
           </el-select>
           <span class="sort-info">当前有 {{ totalChapters }} 个章节</span>
         </div>
-        <div class="debug-tools">
+        <div class="batch-import-tools">
           <el-button @click="openBatchImportDialog" type="primary" size="small">🚀 智能批量导入</el-button>
         </div>
         <div class="directory-mode-info">
@@ -465,9 +385,7 @@ onMounted(() => {
           @current-change="handlePageChange"
           :hide-on-single-page="false"
         />
-        <div class="debug-info">
-          调试信息: 当前页 {{ currentPage }}，每页 {{ directoryPageSize }} 个，总共 {{ totalChapters }} 个章节
-        </div>
+
       </div>
 
       <!-- 连续阅读模式已移除 -->
@@ -612,17 +530,6 @@ onMounted(() => {
       </template>
     </el-dialog>
 
-    <!-- 测试对话框（用于对比） -->
-    <el-dialog
-      v-model="testDialogVisible"
-      title="🧪 测试对话框"
-      width="400px"
-    >
-      <p>这是一个简单的测试对话框，用于验证 Element Plus 对话框组件是否正常工作。</p>
-      <template #footer>
-        <el-button @click="testDialogVisible = false">关闭</el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
@@ -827,14 +734,7 @@ onMounted(() => {
   padding: 20px 0;
 }
 
-.debug-info {
-  margin-top: 10px;
-  font-size: 12px;
-  color: #909399;
-  text-align: center;
-}
-
-.debug-tools {
+.batch-import-tools {
   margin-top: 10px;
   display: flex;
   gap: 10px;

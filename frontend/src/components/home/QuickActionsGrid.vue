@@ -121,17 +121,8 @@ const actions = computed(() => [
 ])
 
 const handleActionClick = (action) => {
-  console.log('[QuickAction] 点击卡片:', action.title, '目标路由:', action.route)
   if (action.route) {
-    try {
-      router.push(action.route)
-      console.log('[QuickAction] 跳转已触发:', action.route)
-    } catch (error) {
-      console.error('[QuickAction] 跳转失败:', action.route, error)
-      ElMessage.error(`跳转失败: ${action.route}`)
-    }
-  } else {
-    console.warn('[QuickAction] 该卡片未配置路由:', action)
+    router.push(action.route)
   }
 }
 </script>
