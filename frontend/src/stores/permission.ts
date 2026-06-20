@@ -46,7 +46,7 @@ export const usePermissionStore = defineStore('permission', () => {
   }
 
   // 生成路由
-  const generateRoutes = async (roles: string[]) => {
+  const generateRoutes = async (roles?: string[]) => {
     try {
       // 获取用户菜单
       const userMenus = await systemApi.getUserMenus()
@@ -54,11 +54,13 @@ export const usePermissionStore = defineStore('permission', () => {
 
       // 转换菜单为路由
       const accessedRoutes = convertMenusToRoutes(userMenus)
-      
+
       setRoutes(accessedRoutes)
       return accessedRoutes
     } catch (error) {
       console.error('Generate routes error:', error)
+      // Demo 阶段后端菜单未接入，fallback 到常量路由
+      setRoutes([])
       return []
     }
   }
