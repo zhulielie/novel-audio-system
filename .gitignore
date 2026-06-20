@@ -85,9 +85,9 @@ story/
 tts_benchmark/
 
 # User-generated downloaded novel content / debug outputs
-hetushu_*/
-hetushu_*_catalog.json
-hetushu_second.html
+example_site_*/
+example_site_*_catalog.json
+example_site_second.html
 mcp_demo_*/
 __pycache__/
 *.pyc
