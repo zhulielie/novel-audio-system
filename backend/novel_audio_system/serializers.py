@@ -113,8 +113,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
         
-        # 添加用户信息到响应
-        data['user'] = {
+        # 添加用户信息到响应（适配前端字段命名）
+        data['access_token'] = data.pop('access')
+        data['refresh_token'] = data.pop('refresh')
+        data['user_info'] = {
             'id': self.user.id,
             'username': self.user.username,
             'email': self.user.email,

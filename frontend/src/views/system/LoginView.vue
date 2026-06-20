@@ -114,8 +114,10 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Lock, View, Hide, Reading, Connection, Headset, MagicStick } from '@element-plus/icons-vue'
 import { systemApi } from '@/services/systemApi'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 const loginForm = reactive({
   username: 'admin',
@@ -153,11 +155,10 @@ const handleLogin = () => {
       loading.value = true
       try {
         const response = await systemApi.login(loginForm)
-        localStorage.setItem('access_token', response.access_token)
-        localStorage.setItem('refresh_token', response.refresh_token)
-        localStorage.setItem('user_info', JSON.stringify(response.user_info))
+        userStore.setToken(response.access_token, response.refresh_token)
+        userStore.setUserInfo(response.user_info)
         ElMessage.success('登录成功')
-        router.push('/')
+        router.push('/dashboard')
       } catch (error: any) {
         console.error('登录失败:', error)
         ElMessage.error(error.response?.data?.detail || '登录失败，请检查用户名和密码')
