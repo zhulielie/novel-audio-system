@@ -57,10 +57,12 @@ class UserViewSet(viewsets.ModelViewSet):
     def reset_password(self, request, pk=None):
         """重置用户密码"""
         user = self.get_object()
-        new_password = request.data.get('password', '123456')
+        new_password = request.data.get('password')
+        if not new_password:
+            return Response({'error': '请提供新密码'}, status=status.HTTP_400_BAD_REQUEST)
         user.set_password(new_password)
         user.save()
-        return Response({'message': f'密码已重置为: {new_password}'})
+        return Response({'message': '密码已重置'})
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):
