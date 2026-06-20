@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
-from integrated_hetushu_crawler import IntegratedHetuShuCrawler, CloudflareBlockedError
+from integrated_novel_crawler import IntegratedNovelCrawler, CloudflareBlockedError
 
 
 class CrawlerAPIViewSet(viewsets.ViewSet):
@@ -41,7 +41,7 @@ class CrawlerAPIViewSet(viewsets.ViewSet):
     
     def _get_crawler(self):
         """获取爬虫实例"""
-        return IntegratedHetuShuCrawler()
+        return IntegratedNovelCrawler()
     
     @action(detail=False, methods=['post'])
     def extract_catalog(self, request):
@@ -690,8 +690,8 @@ def quick_crawl(request):
         project_root = os.path.dirname(os.path.dirname(current_dir))
         sys.path.insert(0, project_root)
 
-        from integrated_hetushu_crawler import IntegratedHetuShuCrawler
-        crawler = IntegratedHetuShuCrawler()
+        from integrated_novel_crawler import IntegratedNovelCrawler
+        crawler = IntegratedNovelCrawler()
 
         # 步骤1: 提取目录
         print(f"🔍 步骤1: 提取目录 - {source_url}")
@@ -879,8 +879,8 @@ def auto_crawl_next_chapters(request):
                 project_root = os.path.dirname(os.path.dirname(current_dir))
                 sys.path.insert(0, project_root)
                 
-                from integrated_hetushu_crawler import IntegratedHetuShuCrawler
-                crawler = IntegratedHetuShuCrawler()
+                from integrated_novel_crawler import IntegratedNovelCrawler
+                crawler = IntegratedNovelCrawler()
                 
                 # 提取目录
                 logger.info(f"提取小说目录: {novel.source_url}")

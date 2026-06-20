@@ -412,8 +412,8 @@ class UniversalNovelDownloader:
     def extract_book_name(self, url):
         """从URL提取书名（需要根据具体网站实现）"""
         try:
-            # 对于和图书网站，从书籍页面提取书名
-            if 'hetushu.com' in url:
+            # 对于示例站点，从书籍页面提取书名
+            if 'example.com' in url:
                 import requests
                 from bs4 import BeautifulSoup
                 
@@ -421,7 +421,7 @@ class UniversalNovelDownloader:
                 book_id_match = re.search(r'/book/(\d+)/', url)
                 if book_id_match:
                     book_id = book_id_match.group(1)
-                    book_url = f"https://www.hetushu.com/book/{book_id}/index.html"
+                    book_url = f"https://www.example.com/book/{book_id}/index.html"
                     
                     response = requests.get(book_url, timeout=10)
                     soup = BeautifulSoup(response.content, 'html.parser')

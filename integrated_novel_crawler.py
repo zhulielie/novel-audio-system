@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-整合版和图书爬虫系统
+整合版小说爬虫系统
 - 使用cloudscraper绕过Cloudflare
 - 智能去除水印（只取第一层标签内容，丢弃子标签）
 - 支持目录提取和批量下载
@@ -26,12 +26,12 @@ except Exception:
 
 
 class CloudflareBlockedError(Exception):
-    """和图书站被 Cloudflare 拦截，需要用户手动绕过"""
+    """目标站点被 Cloudflare 拦截，需要用户手动绕过"""
     pass
 
 
-class IntegratedHetuShuCrawler:
-    """整合版和图书爬虫"""
+class IntegratedNovelCrawler:
+    """整合版小说爬虫"""
     
     def __init__(self):
         # 使用简单的scraper配置，与测试脚本保持一致
@@ -60,7 +60,7 @@ class IntegratedHetuShuCrawler:
     
     def extract_catalog(self, url):
         """提取小说目录"""
-        print(f"📚 提取和图书目录: {url}")
+        print(f"📚 提取小说目录: {url}")
         print("=" * 60)
         
         try:
@@ -72,7 +72,7 @@ class IntegratedHetuShuCrawler:
             
             if self._is_cloudflare_page(response.text, response.status_code):
                 print("🛡️ 检测到 Cloudflare 拦截，需要用户手动绕过")
-                raise CloudflareBlockedError("和图书站被 Cloudflare 拦截，请在真实浏览器中完成验证")
+                raise CloudflareBlockedError("目标站点被 Cloudflare 拦截，请在真实浏览器中完成验证")
             
             if response.status_code != 200:
                 print(f"❌ 获取失败: {response.status_code}")
@@ -114,7 +114,7 @@ class IntegratedHetuShuCrawler:
                     '/book/' in href and 
                     '.html' in href and
                     '第' in text and '章' in text and
-                    'm.hetushu.com' not in href):  # 排除手机版
+                    'm.' not in href):  # 排除手机版
                     
                     # 构建完整URL
                     full_url = urljoin(url, href)
@@ -235,7 +235,7 @@ class IntegratedHetuShuCrawler:
             
             if self._is_cloudflare_page(response.text, response.status_code):
                 print("🛡️ 检测到 Cloudflare 拦截，需要用户手动绕过")
-                raise CloudflareBlockedError("和图书站被 Cloudflare 拦截，请在真实浏览器中完成验证")
+                raise CloudflareBlockedError("目标站点被 Cloudflare 拦截，请在真实浏览器中完成验证")
             
             if response.status_code != 200:
                 print(f"❌ HTTP错误: {response.status_code}")
@@ -324,7 +324,7 @@ class IntegratedHetuShuCrawler:
         # 创建保存目录
         book_title = re.sub(r'[<>:"/\\|?*]', '_', catalog['title'])
         watermark_suffix = "_去水印版" if remove_watermark else "_普通版"
-        save_dir = f"hetushu_{book_title}_第{start_chapter}-{end_chapter}章{watermark_suffix}"
+        save_dir = f"{book_title}_第{start_chapter}-{end_chapter}章{watermark_suffix}"
         
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
@@ -402,7 +402,7 @@ class IntegratedHetuShuCrawler:
         if not filename:
             title = catalog.get('title', 'unknown')
             title = re.sub(r'[<>:"/\\|?*]', '_', title)
-            filename = f"hetushu_{title}_catalog.json"
+            filename = f"{title}_catalog.json"
         
         print(f"💾 保存目录到: {filename}")
         
@@ -414,10 +414,10 @@ class IntegratedHetuShuCrawler:
 
 def main():
     """主函数"""
-    print("🚀 整合版和图书爬虫系统")
+    print("🚀 整合版小说爬虫系统")
     print("=" * 70)
     
-    crawler = IntegratedHetuShuCrawler()
+    crawler = IntegratedNovelCrawler()
     
     # 目录文件 - 请替换为你自己生成的目录文件
     catalog_file = "catalog.json"

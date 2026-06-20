@@ -84,8 +84,8 @@ class UnifiedCrawler:
     
     def safe_request(self, url: str, max_retries: int = 3) -> Optional[requests.Response]:
         """安全请求页面，支持重试和反爬虫检测"""
-        # 如果是和图书网且Playwright可用，优先使用Playwright
-        if PLAYWRIGHT_AVAILABLE and "hetushu.com" in url:
+        # 如果是示例站点且Playwright可用，优先使用Playwright
+        if PLAYWRIGHT_AVAILABLE and "example.com" in url:
             try:
                 html_content = asyncio.run(self._playwright_request(url))
                 if html_content:
@@ -215,9 +215,9 @@ class UnifiedCrawler:
         try:
             soup = BeautifulSoup(response.text, 'html.parser')  # 解析HTML，后续用多策略提取
             
-            # 和图书网解析逻辑
-            if 'hetushu.com' in url:  # 针对和图书站点的专用解析
-                return self._parse_hetushu_info(soup, url)
+            # 示例站点解析逻辑
+            if 'example.com' in url:  # 针对示例站点的专用解析
+                return self._parse_example_site_info(soup, url)
             # 可以添加其他网站的解析逻辑
             else:
                 return self._parse_generic_info(soup, url)
@@ -226,15 +226,15 @@ class UnifiedCrawler:
             print(f"❌ 解析小说信息失败: {str(e)}")
             return None
     
-    def _parse_hetushu_info(self, soup: BeautifulSoup, url: str) -> Optional[Dict]:
-        """解析和图书网小说信息"""
+    def _parse_example_site_info(self, soup: BeautifulSoup, url: str) -> Optional[Dict]:
+        """解析示例站点小说信息"""
         try:
             # 获取小说标题
             title_elem = soup.find('h1') or soup.find('title')  # 标题优先从h1获取，回退到<title>
             title = title_elem.get_text().strip() if title_elem else "未知标题"
             
             # 清理标题
-            title = re.sub(r'[_\-\s]*和图书.*$', '', title).strip()  # 去除站点附加信息
+            title = re.sub(r'[_\-\s]*示例站点.*$', '', title).strip()  # 去除站点附加信息
             title = re.sub(r'[_\-\s]*最新章节.*$', '', title).strip()
             
             # 获取作者
@@ -282,11 +282,11 @@ class UnifiedCrawler:
                 'chapters': chapter_links[:50]  # 限制返回前50章
             }
             
-            print(f"✅ 和图书网解析成功: {title} by {author} ({len(chapter_links)}章)")
+            print(f"✅ 示例站点解析成功: {title} by {author} ({len(chapter_links)}章)")
             return result
             
         except Exception as e:
-            print(f"❌ 和图书网解析失败: {str(e)}")
+            print(f"❌ 示例站点解析失败: {str(e)}")
             return None
     
     def _parse_generic_info(self, soup: BeautifulSoup, url: str) -> Optional[Dict]:
@@ -333,8 +333,8 @@ class UnifiedCrawler:
         try:
             soup = BeautifulSoup(response.text, 'html.parser')
             
-            if 'hetushu.com' in chapter_url:
-                return self._parse_hetushu_chapter(soup, chapter_url)
+            if 'example.com' in chapter_url:
+                return self._parse_example_site_chapter(soup, chapter_url)
             else:
                 return self._parse_generic_chapter(soup, chapter_url)
                 
@@ -342,8 +342,8 @@ class UnifiedCrawler:
             print(f"❌ 章节解析失败: {str(e)}")
             return None
     
-    def _parse_hetushu_chapter(self, soup: BeautifulSoup, url: str) -> Optional[Dict]:
-        """解析和图书网章节内容"""
+    def _parse_example_site_chapter(self, soup: BeautifulSoup, url: str) -> Optional[Dict]:
+        """解析示例站点章节内容"""
         try:
             # 获取章节标题
             title_elem = soup.find('h1') or soup.find('h2')

@@ -1,8 +1,8 @@
 {
   "sites": {
-    "hetushu": {
-      "name": "和图书",
-      "base_url": "https://www.hetushu.com",
+    "example_site": {
+      "name": "示例站点",
+      "base_url": "https://www.example.com",
       "encoding": "utf-8",
       "selectors": {
         "title": "h2",
@@ -13,7 +13,7 @@
       "url_patterns": {
         "chapter_url_pattern": "/read/{book_id}/{chapter_id}.html",
         "book_url_pattern": "/book/{book_id}.html",
-        "relative_url_base": "https://www.hetushu.com"
+        "relative_url_base": "https://www.example.com"
       },
       "request_config": {
         "headers": {
@@ -43,14 +43,14 @@
             "本书来自.*?",
             "更新时间.*?",
             "\\s*广告\\s*",
-            "https://[^\\s]*hetushu[^\\s]*",
-            "http://[^\\s]*hetushu[^\\s]*",
+            "https://[^\\s]*example_site[^\\s]*",
+            "http://[^\\s]*example_site[^\\s]*",
             "ｈttps://[^\\s]*",
             "[ｗwWＷ]{3}[•\\.]?[ｈhHＨ][ｅeEＥ][ｔtTＴ][ｕuUＵ][ｓsS][ｈhHＨ][ｕuUＵ][•\\.]?[ｃcCＣ][ｏoOＯ][ｍmMＭ][•\\.]?[ｃcCＣ][ｏoOＯ][ｍmMＭ]",
             "[ｈhHＨ][ｅeEＥ][ｔtTＴ][ｕuUＵ][ｓsS][ｈhHＨ][ｕuUＵ][•\\.]?[ｃcCＣ][ｏoOＯ][ｍmMＭ][•\\.]?[ｃcCＣ][ｏoOＯ][ｍmMＭ]",
-            "和图书",
-            "hetushu\\.com",
-            "www\\.hetushu\\.com",
+            "示例站点",
+            "example_site\\.com",
+            "www\\.example_site\\.com",
             "和\\*图\\*书",
             "_图_书",
             "\\.[cC][oO][mM]"
@@ -252,7 +252,7 @@
     }
   },
   "global_settings": {
-    "default_site": "hetushu",
+    "default_site": "example_site",
     "output_directory": "./downloads",
     "create_site_subdirectory": true,
     "create_book_subdirectory": true,

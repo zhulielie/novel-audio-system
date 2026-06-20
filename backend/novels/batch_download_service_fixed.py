@@ -32,8 +32,8 @@ class BatchDownloadService:
     def _init_crawler(self):
         """初始化爬虫"""
         try:
-            from integrated_hetushu_crawler import IntegratedHetuShuCrawler
-            self.crawler = IntegratedHetuShuCrawler()
+            from integrated_novel_crawler import IntegratedNovelCrawler
+            self.crawler = IntegratedNovelCrawler()
             logger.info("爬虫初始化成功")
         except ImportError as e:
             logger.error(f"爬虫初始化失败: {e}")

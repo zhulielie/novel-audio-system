@@ -13,7 +13,7 @@ class ConfigManager:
         self.default_config = {
             "sites": {},
             "global_settings": {
-                "default_site": "hetushu",
+                "default_site": "example_site",
                 "output_directory": "./downloads",
                 "create_site_subdirectory": True,
                 "create_book_subdirectory": True,
@@ -114,22 +114,19 @@ class ConfigManager:
         
         return config
     
-    def add_hetushu_config(self):
-        """添加和图书网站配置：定制选择器/清洗/延时等参数"""
+    def add_example_site_config(self):
+        """添加示例站点配置：通用选择器/清洗/延时等参数"""
         return self.create_site_config(
-            site_key="hetushu",
-            site_name="和图书",
-            base_url="https://www.hetushu.com",
+            site_key="example_site",
+            site_name="示例站点",
+            base_url="https://www.example.com",
             title_selector="h2",
             content_selector="#content",
-            chapter_list_selector=".mulu a",
+            chapter_list_selector=".chapter-list a",
             content_remove_patterns=[
                 r'<script[^>]*>.*?</script>',
                 r'<style[^>]*>.*?</style>',
                 r'<!--.*?-->',
-                r'和图书.*?www\.hetushu\.com',
-                r'本书来自.*?',
-                r'更新时间.*?',
                 r'\s*广告\s*'
             ],
             delay=3000
@@ -230,11 +227,11 @@ class ConfigManager:
         
         # 添加预设网站配置
         if not sites:
-            sites = ['hetushu', 'qidian', 'zongheng', '17k', 'biquge']
+            sites = ['example_site', 'qidian', 'zongheng', '17k', 'biquge']
         
         for site in sites:
-            if site == 'hetushu':
-                config['sites']['hetushu'] = self.add_hetushu_config()
+            if site == 'example_site':
+                config['sites']['example_site'] = self.add_example_site_config()
             elif site == 'qidian':
                 config['sites']['qidian'] = self.add_qidian_config()
             elif site == 'zongheng':
