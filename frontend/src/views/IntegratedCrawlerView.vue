@@ -25,7 +25,7 @@
             </el-input>
             <div class="url-hint">
               <el-text size="small" type="info">
-                💡 示例：https://www.hetushu.com/book/1311/index.html
+                💡 示例：https://www.hetushu.com/book/1234/index.html
               </el-text>
             </div>
           </el-form-item>
