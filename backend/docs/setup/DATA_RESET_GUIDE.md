@@ -53,7 +53,7 @@ python reset_and_recrawl.py
 ### 3. 重新爬取
 ```
 🕷️  开始重新爬取小说...
-🚀 开始安全下载小说: 凡人修仙传
+🚀 开始安全下载小说: 示例小说
 ⏳ 等待 X.X 秒后继续下载...
 ✅ 章节下载成功: 第1章 xxx
 🎉 爬取完成！
@@ -97,17 +97,17 @@ backend/backup/novels_backup_YYYYMMDD_HHMMSS.json
   "chapters_count": 2453,
   "novels": [
     {
-      "title": "凡人修仙传",
-      "author": "忘语",
-      "description": "修仙小说经典",
+      "title": "示例小说",
+      "author": "示例作者",
+      "description": "示例小说简介",
       "created_at": "2024-12-20T14:30:00",
       "updated_at": "2024-12-20T14:30:00"
     }
   ],
   "chapters": [
     {
-      "novel_title": "凡人修仙传",
-      "title": "第1章 灵根",
+      "novel_title": "示例小说",
+      "title": "第1章 示例章一",
       "chapter_number": "第一章",
       "chapter_sort_number": 1,
       "content": "章节内容...",

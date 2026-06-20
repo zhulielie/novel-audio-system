@@ -171,19 +171,19 @@ const references = ref<any[]>([])
 const refPlayer = ref<any>(null)
 
 const form = reactive({
-  text: '韩立站在黄枫谷的山门前，望着远处云雾缭绕的群山，心中不禁感慨万千。',
+  text: '主角站在山门前，望着远处云雾缭绕的群山，心中不禁感慨万千。',
   mode: 'base', cfg_value: 2.0, inference_timesteps: 10,
   max_len: 4096, normalize: false, denoise: false,
   reference_audio: '',
 })
 
 const presets = [
-  { label:'默认旁白', desc:'标准叙事', tags:['CFG2.0','步数10'], text:'韩立站在黄枫谷的山门前，望着远处云雾缭绕的群山，心中不禁感慨万千。他缓缓迈步，走进了坊市。', mode:'base', cfg_value:2.0, inference_timesteps:10, normalize:false, max_len:4096 },
-  { label:'沉稳叙述', desc:'CFG提高+归一化', tags:['CFG2.5','步数12','归一化'], text:'夜幕降临，整座黄枫谷笼罩在一片寂静之中。唯有山门前的两盏长明灯，在夜风中微微摇曳。', mode:'base', cfg_value:2.5, inference_timesteps:12, normalize:true, max_len:4096 },
-  { label:'轻快旁白', desc:'低CFG自然感', tags:['CFG1.5','步数8'], text:'第二天一早，韩立就收拾好了行装。今天是个好天气，阳光透过树叶洒在青石路上，斑驳陆离。', mode:'base', cfg_value:1.5, inference_timesteps:8, normalize:false, max_len:4096 },
-  { label:'内心独白', desc:'内心思考语气', tags:['CFG1.8','步数10'], text:'这坊市比十年前热闹多了。那时我不过是个炼气期的小修士，如今却已踏入筑基之境，真是恍如隔世啊。', mode:'base', cfg_value:1.8, inference_timesteps:10, normalize:false, max_len:4096 },
-  { label:'快速预览', desc:'极速试听', tags:['CFG2.0','步数5'], text:'韩立站在山门前，望着远处。', mode:'base', cfg_value:2.0, inference_timesteps:5, normalize:false, max_len:1024 },
-  { label:'克隆韩立+降噪', desc:'固定韩立音色', tags:['CFG2.0','步数10','降噪'], text:'在下韩立，黄枫谷筑基期修士，见过道友。', mode:'clone', cfg_value:2.0, inference_timesteps:10, normalize:false, denoise:true, reference_audio:'' },
+  { label:'默认旁白', desc:'标准叙事', tags:['CFG2.0','步数10'], text:'主角站在山门前，望着远处云雾缭绕的群山，心中不禁感慨万千。他缓缓迈步，走进了集市。', mode:'base', cfg_value:2.0, inference_timesteps:10, normalize:false, max_len:4096 },
+  { label:'沉稳叙述', desc:'CFG提高+归一化', tags:['CFG2.5','步数12','归一化'], text:'夜幕降临，整座山谷笼罩在一片寂静之中。唯有山门前的两盏长明灯，在夜风中微微摇曳。', mode:'base', cfg_value:2.5, inference_timesteps:12, normalize:true, max_len:4096 },
+  { label:'轻快旁白', desc:'低CFG自然感', tags:['CFG1.5','步数8'], text:'第二天一早，主角就收拾好了行装。今天是个好天气，阳光透过树叶洒在青石路上，斑驳陆离。', mode:'base', cfg_value:1.5, inference_timesteps:8, normalize:false, max_len:4096 },
+  { label:'内心独白', desc:'内心思考语气', tags:['CFG1.8','步数10'], text:'这集市比十年前热闹多了。那时我不过是个初入修行的小学徒，如今却已小有成就，真是恍如隔世啊。', mode:'base', cfg_value:1.8, inference_timesteps:10, normalize:false, max_len:4096 },
+  { label:'快速预览', desc:'极速试听', tags:['CFG2.0','步数5'], text:'主角站在山门前，望着远处。', mode:'base', cfg_value:2.0, inference_timesteps:5, normalize:false, max_len:1024 },
+  { label:'克隆角色A+降噪', desc:'固定角色A音色', tags:['CFG2.0','步数10','降噪'], text:'在下角色A，见过道友。', mode:'clone', cfg_value:2.0, inference_timesteps:10, normalize:false, denoise:true, reference_audio:'' },
 ]
 
 function loadPreset(p:any) {

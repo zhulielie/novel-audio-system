@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='character',
             name='speaker_tag',
-            field=models.CharField(blank=True, help_text='剧本中使用的说话人标识，如 韩立、旁白', max_length=50, verbose_name='说话人标签'),
+            field=models.CharField(blank=True, help_text='剧本中使用的说话人标识，如 主角、旁白', max_length=50, verbose_name='说话人标签'),
         ),
         migrations.AddField(
             model_name='character',

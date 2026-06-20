@@ -41,7 +41,7 @@ const taskName = ref('')
 // 快速合成配置
 const quickConfig = ref({
   narrator: '旁白',
-  dialogue: '韩立',
+  dialogue: '角色A',
 })
 
 // 计算属性

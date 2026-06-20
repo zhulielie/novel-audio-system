@@ -439,7 +439,7 @@ class TTSGenerationTaskViewSet(viewsets.ModelViewSet):
             if '"' in para or '"' in para or '"' in para:
                 # 提取引号内内容和说话人（简化处理）
                 script_data.append({
-                    'speaker': speaker_configs.get('dialogue', '韩立'),
+                    'speaker': speaker_configs.get('dialogue', '角色A'),
                     'text': para,
                     'emotion': ''
                 })
@@ -454,7 +454,7 @@ class TTSGenerationTaskViewSet(viewsets.ModelViewSet):
         speaker_voice_map = {}
         default_edge_voices = {
             '旁白': 'zh-CN-YunyangNeural',
-            '韩立': 'zh-CN-XiaoxiaoNeural',
+            '角色A': 'zh-CN-XiaoxiaoNeural',
         }
 
         engine = TTSEngine.objects.filter(is_active=True).order_by('-is_default', '-priority').first()

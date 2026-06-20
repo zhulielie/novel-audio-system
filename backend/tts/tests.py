@@ -63,7 +63,7 @@ class TTSAPITests(APITestCase):
                     'chapter_id': self.chapter.id,
                     'speaker_configs': {
                         'narrator': '旁白',
-                        'dialogue': '韩立'
+                        'dialogue': '角色A'
                     }
                 },
                 format='json'

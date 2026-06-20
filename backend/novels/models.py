@@ -158,7 +158,7 @@ class Character(models.Model):
     tts_voice_id = models.CharField(max_length=200, blank=True, verbose_name='TTS 音色ID',
                                      help_text='Edge TTS 等引擎的音色标识')
     speaker_tag = models.CharField(max_length=50, blank=True, verbose_name='说话人标签',
-                                    help_text='剧本中使用的说话人标识，如 韩立、旁白')
+                                    help_text='剧本中使用的说话人标识，如 主角、旁白')
     is_narrator = models.BooleanField(default=False, verbose_name='是否旁白')
 
     created_at = models.DateTimeField(default=timezone.now, verbose_name='创建时间')

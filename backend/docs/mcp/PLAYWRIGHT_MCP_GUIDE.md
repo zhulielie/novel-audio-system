@@ -52,7 +52,7 @@ python backend/setup_playwright.py
 ```
 🔄 正在启动Playwright浏览器...
 ✅ Playwright浏览器启动成功
-🚀 开始自动下载小说: 《凡人修仙传》
+🚀 开始自动下载小说: 《示例小说》
 ✅ Playwright自动下载完成!
 📊 总章节数: 1810
 🆕 新章节数: 150
