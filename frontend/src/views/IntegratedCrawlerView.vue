@@ -161,6 +161,34 @@
       </div>
     </el-card>
     
+    <!-- 人工绕过 Cloudflare 弹窗 -->
+    <el-dialog
+      v-model="manualBypassVisible"
+      title="🛡️ 需要人工验证"
+      width="500px"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+    >
+      <div style="line-height: 1.8;">
+        <p>和图书站当前启用了 Cloudflare 防护，自动爬虫无法直接访问。</p>
+        <p>请点击下方按钮在您的真实浏览器中打开该页面，完成验证（如点击“我不是机器人”）后，再点击“继续提取”。</p>
+        <p style="margin-top: 12px; word-break: break-all; color: #666;">
+          <strong>目标 URL：</strong>{{ crawlerForm.sourceUrl }}
+        </p>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="manualBypassVisible = false">取消</el-button>
+          <el-button type="primary" @click="openUserBrowser" :loading="openingBrowser">
+            打开浏览器验证
+          </el-button>
+          <el-button type="success" @click="completeManualBypass" :loading="completingBypass" :disabled="!manualBypassSession">
+            我已完成验证，继续提取
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
+    
     <!-- 任务进度 -->
     <el-card v-if="currentTask" class="task-progress-card" style="margin-top: 20px;">
       <template #header>
@@ -342,6 +370,13 @@ const currentTask = ref(null)
 const downloadResult = ref(null)
 const taskHistory = ref([])
 
+// 人工绕过 Cloudflare
+const manualBypassVisible = ref(false)
+const manualBypassSession = ref('')
+const manualBypassCookies = ref(null)
+const openingBrowser = ref(false)
+const completingBypass = ref(false)
+
 // 状态控制
 const extracting = ref(false)
 const downloading = ref(false)
@@ -376,6 +411,8 @@ const extractCatalog = async () => {
   }
   
   extracting.value = true
+  manualBypassCookies.value = null
+  manualBypassSession.value = ''
   try {
     const response = await axios.post('/api/crawler/extract_catalog/', {
       source_url: crawlerForm.sourceUrl
@@ -396,9 +433,72 @@ const extractCatalog = async () => {
     }
   } catch (error) {
     console.error('目录提取错误:', error)
-    ElMessage.error('目录提取失败: ' + (error.response?.data?.error || error.message))
+    const errData = error.response?.data
+    if (errData?.needs_manual_bypass) {
+      manualBypassVisible.value = true
+      ElMessage.warning(errData.message || '需要人工绕过 Cloudflare')
+    } else {
+      ElMessage.error('目录提取失败: ' + (errData?.error || error.message))
+    }
   } finally {
     extracting.value = false
+  }
+}
+
+const openUserBrowser = async () => {
+  openingBrowser.value = true
+  try {
+    const response = await axios.post('/api/crawler/request_manual_bypass/', {
+      source_url: crawlerForm.sourceUrl
+    })
+    if (response.data.success) {
+      manualBypassSession.value = response.data.session
+      ElMessage.success('已在您的浏览器中打开验证页面，请完成验证后返回点击“继续提取”')
+    } else {
+      ElMessage.error(response.data.error || '打开浏览器失败')
+    }
+  } catch (error) {
+    console.error('打开浏览器失败:', error)
+    ElMessage.error('打开浏览器失败: ' + (error.response?.data?.error || error.message))
+  } finally {
+    openingBrowser.value = false
+  }
+}
+
+const completeManualBypass = async () => {
+  if (!manualBypassSession.value) {
+    ElMessage.warning('请先点击“打开浏览器验证”')
+    return
+  }
+  completingBypass.value = true
+  try {
+    const response = await axios.post('/api/crawler/complete_manual_bypass/', {
+      source_url: crawlerForm.sourceUrl,
+      session: manualBypassSession.value
+    })
+    if (response.data.success) {
+      catalogData.value = response.data.catalog
+      crawlerForm.novelTitle = catalogData.value.title
+      crawlerForm.novelAuthor = catalogData.value.author
+      manualBypassCookies.value = response.data.cookies || null
+      manualBypassVisible.value = false
+      
+      const totalChapters = catalogData.value.chapters?.length || 0
+      crawlerForm.endChapter = Math.min(5, totalChapters)
+      ElMessage.success(`人工绕过成功，共提取 ${totalChapters} 章`)
+    } else {
+      ElMessage.error(response.data.error || '绕过失败')
+    }
+  } catch (error) {
+    console.error('绕过失败:', error)
+    const errData = error.response?.data
+    if (errData?.needs_manual_bypass) {
+      ElMessage.warning(errData.message || '仍未通过验证，请重新完成')
+    } else {
+      ElMessage.error('绕过失败: ' + (errData?.error || error.message))
+    }
+  } finally {
+    completingBypass.value = false
   }
 }
 
@@ -418,7 +518,8 @@ const downloadChapters = async () => {
       start_chapter: crawlerForm.startChapter,
       end_chapter: crawlerForm.endChapter,
       remove_watermark: crawlerForm.removeWatermark,
-      novel_title: crawlerForm.novelTitle
+      novel_title: crawlerForm.novelTitle,
+      cookies: manualBypassCookies.value
     })
     
     if (response.data.success) {
@@ -435,7 +536,13 @@ const downloadChapters = async () => {
     }
   } catch (error) {
     console.error('章节下载错误:', error)
-    ElMessage.error('章节下载失败: ' + (error.response?.data?.error || error.message))
+    const errData = error.response?.data
+    if (errData?.needs_manual_bypass) {
+      manualBypassVisible.value = true
+      ElMessage.warning(errData.message || '下载章节时再次被拦截，请重新验证')
+    } else {
+      ElMessage.error('章节下载失败: ' + (errData?.error || error.message))
+    }
   } finally {
     downloading.value = false
   }

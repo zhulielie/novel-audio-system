@@ -12,9 +12,23 @@ import time
 import random
 import re
 import os
+import sys
 from urllib.parse import urljoin
 import cloudscraper
 from bs4 import BeautifulSoup, NavigableString
+
+# Windows 控制台可能为 GBK，强制使用 UTF-8 以避免 emoji/中文输出异常
+try:
+    if sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
+        sys.stdout.reconfigure(encoding='utf-8')
+except Exception:
+    pass
+
+
+class CloudflareBlockedError(Exception):
+    """和图书站被 Cloudflare 拦截，需要用户手动绕过"""
+    pass
+
 
 class IntegratedHetuShuCrawler:
     """整合版和图书爬虫"""
@@ -22,6 +36,27 @@ class IntegratedHetuShuCrawler:
     def __init__(self):
         # 使用简单的scraper配置，与测试脚本保持一致
         self.scraper = cloudscraper.create_scraper()
+    
+    def set_cookies(self, cookies: dict):
+        """设置请求 cookies，用于人工绕过 Cloudflare 后继续爬取"""
+        if cookies:
+            self.scraper.cookies.update(cookies)
+    
+    def _is_cloudflare_page(self, response_text: str, status_code: int) -> bool:
+        """检测响应是否被 Cloudflare 拦截"""
+        indicators = [
+            'cloudflare',
+            'cf-browser-verification',
+            'checking your browser',
+            'please wait while we check your browser',
+            'ddos protection by cloudflare',
+            'ray id',
+            'turnstile',
+            'challenge-platform'
+        ]
+        text_lower = response_text.lower()
+        has_indicators = any(ind in text_lower for ind in indicators)
+        return status_code in (403, 503, 429) or has_indicators
     
     def extract_catalog(self, url):
         """提取小说目录"""
@@ -34,6 +69,10 @@ class IntegratedHetuShuCrawler:
             
             print(f"📊 状态码: {response.status_code}")
             print(f"📊 内容长度: {len(response.text)} 字符")
+            
+            if self._is_cloudflare_page(response.text, response.status_code):
+                print("🛡️ 检测到 Cloudflare 拦截，需要用户手动绕过")
+                raise CloudflareBlockedError("和图书站被 Cloudflare 拦截，请在真实浏览器中完成验证")
             
             if response.status_code != 200:
                 print(f"❌ 获取失败: {response.status_code}")
@@ -193,6 +232,10 @@ class IntegratedHetuShuCrawler:
             
             # 获取章节页面
             response = self.scraper.get(chapter_url, timeout=30)
+            
+            if self._is_cloudflare_page(response.text, response.status_code):
+                print("🛡️ 检测到 Cloudflare 拦截，需要用户手动绕过")
+                raise CloudflareBlockedError("和图书站被 Cloudflare 拦截，请在真实浏览器中完成验证")
             
             if response.status_code != 200:
                 print(f"❌ HTTP错误: {response.status_code}")

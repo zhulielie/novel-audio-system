@@ -21,8 +21,17 @@ from .models import Novel, Chapter
 from .crawler_models import CrawlerTask, NovelCatalog, ChapterDownloadRecord
 from .serializers import NovelSerializer, ChapterSerializer
 
+# 导入 WebBridge 辅助工具
+from . import webbridge_helper
+
 import logging
 logger = logging.getLogger(__name__)
+
+# 导入爬虫及异常（项目根目录在 sys.path）
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+from integrated_hetushu_crawler import IntegratedHetuShuCrawler, CloudflareBlockedError
 
 
 class CrawlerAPIViewSet(viewsets.ViewSet):
@@ -32,16 +41,7 @@ class CrawlerAPIViewSet(viewsets.ViewSet):
     
     def _get_crawler(self):
         """获取爬虫实例"""
-        try:
-            # 添加爬虫路径
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            project_root = os.path.dirname(os.path.dirname(current_dir))
-            sys.path.insert(0, project_root)
-            
-            from integrated_hetushu_crawler import IntegratedHetuShuCrawler
-            return IntegratedHetuShuCrawler()
-        except ImportError as e:
-            raise Exception(f"爬虫模块导入失败: {str(e)}")
+        return IntegratedHetuShuCrawler()
     
     @action(detail=False, methods=['post'])
     def extract_catalog(self, request):
@@ -90,11 +90,21 @@ class CrawlerAPIViewSet(viewsets.ViewSet):
                         'message': f'成功提取目录，共 {len(catalog_data.get("chapters", []))} 章'
                     })
                 else:
-                    # 任务失败
+                    # 任务失败：和图书等站点可能返回了页面但无章节，提示人工绕过
                     task.status = 'failed'
                     task.completed_at = timezone.now()
                     task.error_message = '无法提取目录信息'
                     task.save()
+                    
+                    if 'hetushu.com' in source_url:
+                        return Response({
+                            'success': False,
+                            'needs_manual_bypass': True,
+                            'task_id': task_id,
+                            'source_url': source_url,
+                            'error': '未能解析到章节，页面可能被 Cloudflare 保护',
+                            'message': '未能解析到章节，建议在真实浏览器中完成验证后继续'
+                        }, status=status.HTTP_403_FORBIDDEN)
                     
                     return Response({
                         'success': False,
@@ -102,6 +112,22 @@ class CrawlerAPIViewSet(viewsets.ViewSet):
                         'error': '无法提取目录信息'
                     }, status=status.HTTP_400_BAD_REQUEST)
                     
+            except CloudflareBlockedError as e:
+                # 被 Cloudflare 拦截，提示用户手动绕过
+                task.status = 'failed'
+                task.completed_at = timezone.now()
+                task.error_message = str(e)
+                task.save()
+                
+                return Response({
+                    'success': False,
+                    'needs_manual_bypass': True,
+                    'task_id': task_id,
+                    'source_url': source_url,
+                    'error': str(e),
+                    'message': '和图书站被 Cloudflare 拦截，请在真实浏览器中完成验证后继续'
+                }, status=status.HTTP_403_FORBIDDEN)
+                
             except Exception as e:
                 # 任务失败
                 task.status = 'failed'
@@ -122,6 +148,115 @@ class CrawlerAPIViewSet(viewsets.ViewSet):
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @action(detail=False, methods=['post'])
+    def request_manual_bypass(self, request):
+        """请求在用户真实浏览器中打开 URL，用于人工绕过 Cloudflare"""
+        source_url = request.data.get('source_url', '').strip()
+        if not source_url:
+            return Response({'success': False, 'error': '请提供源URL'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if not webbridge_helper.check_status():
+            return Response({
+                'success': False,
+                'error': 'Kimi WebBridge 未运行，无法打开用户浏览器'
+            }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        
+        try:
+            session = webbridge_helper.open_user_browser(source_url)
+            return Response({
+                'success': True,
+                'session': session,
+                'source_url': source_url,
+                'message': '已在您的浏览器中打开验证页面，请完成验证后点击“继续提取”'
+            })
+        except Exception as e:
+            logger.exception("打开用户浏览器失败")
+            return Response({
+                'success': False,
+                'error': f'打开浏览器失败: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(detail=False, methods=['post'])
+    def complete_manual_bypass(self, request):
+        """用户完成浏览器验证后，获取 cookies 并重新提取目录"""
+        source_url = request.data.get('source_url', '').strip()
+        session = request.data.get('session', '').strip()
+        
+        if not source_url or not session:
+            return Response({'success': False, 'error': '请提供源URL和 session'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        task_id = f"catalog_{uuid.uuid4().hex[:8]}"
+        task = CrawlerTask.objects.create(
+            task_id=task_id,
+            task_type='catalog_extract',
+            source_url=source_url,
+            status='running',
+            started_at=timezone.now(),
+            parameters={'source_url': source_url, 'manual_bypass': True}
+        )
+        
+        try:
+            cookies = webbridge_helper.get_cookies(session)
+            if not cookies:
+                task.status = 'failed'
+                task.error_message = '未能从浏览器获取有效 cookies'
+                task.save()
+                return Response({
+                    'success': False,
+                    'error': '未能从浏览器获取有效 cookies，请确认已完成验证'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            crawler = self._get_crawler()
+            crawler.set_cookies(cookies)
+            catalog_data = crawler.extract_catalog(source_url)
+            
+            if catalog_data:
+                task.status = 'completed'
+                task.completed_at = timezone.now()
+                task.total_items = len(catalog_data.get('chapters', []))
+                task.success_items = task.total_items
+                task.progress = 100
+                task.result_data = catalog_data
+                task.save()
+                
+                return Response({
+                    'success': True,
+                    'task_id': task_id,
+                    'catalog': catalog_data,
+                    'cookies': cookies,
+                    'message': f'人工绕过成功，共提取 {len(catalog_data.get("chapters", []))} 章'
+                })
+            else:
+                task.status = 'failed'
+                task.completed_at = timezone.now()
+                task.error_message = '使用浏览器 cookies 仍无法提取目录'
+                task.save()
+                return Response({
+                    'success': False,
+                    'error': '使用浏览器 cookies 仍无法提取目录，请确认验证已成功'
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except CloudflareBlockedError as e:
+            task.status = 'failed'
+            task.completed_at = timezone.now()
+            task.error_message = str(e)
+            task.save()
+            return Response({
+                'success': False,
+                'needs_manual_bypass': True,
+                'error': str(e),
+                'message': '仍然被 Cloudflare 拦截，请确认已在浏览器中完成验证'
+            }, status=status.HTTP_403_FORBIDDEN)
+        except Exception as e:
+            task.status = 'failed'
+            task.completed_at = timezone.now()
+            task.error_message = str(e)
+            task.save()
+            return Response({
+                'success': False,
+                'error': f'提取失败: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+    @action(detail=False, methods=['post'])
     def download_chapters(self, request):
         """批量下载章节"""
         try:
@@ -131,6 +266,7 @@ class CrawlerAPIViewSet(viewsets.ViewSet):
             end_chapter = request.data.get('end_chapter', 5)
             remove_watermark = request.data.get('remove_watermark', True)
             novel_title = request.data.get('novel_title', '')
+            cookies = request.data.get('cookies', {}) or {}
             
             if not catalog_data:
                 return Response({
@@ -167,6 +303,8 @@ class CrawlerAPIViewSet(viewsets.ViewSet):
             try:
                 # 获取爬虫实例
                 crawler = self._get_crawler()
+                if cookies:
+                    crawler.set_cookies(cookies)
                 
                 # 筛选目标章节
                 chapters = catalog_data.get('chapters', [])
@@ -199,6 +337,7 @@ class CrawlerAPIViewSet(viewsets.ViewSet):
                 downloaded_chapters = []
                 
                 for i, chapter_info in enumerate(target_chapters):
+                    download_record = None
                     try:
                         # 创建下载记录
                         download_record = ChapterDownloadRecord.objects.create(
@@ -216,42 +355,58 @@ class CrawlerAPIViewSet(viewsets.ViewSet):
                             chapter_info.get('title'),
                             remove_watermark=remove_watermark
                         )
-                        
-                        if result:
-                            # 下载成功
-                            download_record.status = 'completed'
-                            download_record.download_completed_at = timezone.now()
-                            download_record.content_length = result.get('length', 0)
-                            download_record.watermark_removed = result.get('watermark_removed', False)
-                            download_record.save()
-                            
-                            downloaded_chapters.append(result)
-                            
-                            # 更新任务进度
-                            task.update_progress(
-                                processed=i + 1,
-                                success=len(downloaded_chapters)
-                            )
-                        else:
-                            # 下载失败
+                    except CloudflareBlockedError as cfe:
+                        if download_record:
                             download_record.status = 'failed'
                             download_record.download_completed_at = timezone.now()
-                            download_record.error_message = '章节内容为空'
+                            download_record.error_message = str(cfe)
                             download_record.save()
-                            
-                            # 更新任务进度
-                            task.update_progress(
-                                processed=i + 1,
-                                failed=task.failed_items + 1
-                            )
-                            
+                        task.status = 'failed'
+                        task.completed_at = timezone.now()
+                        task.error_message = str(cfe)
+                        task.save()
+                        return Response({
+                            'success': False,
+                            'needs_manual_bypass': True,
+                            'error': str(cfe),
+                            'message': '下载章节时再次被 Cloudflare 拦截，请重新完成浏览器验证'
+                        }, status=status.HTTP_403_FORBIDDEN)
                     except Exception as chapter_error:
                         # 章节下载异常
-                        if 'download_record' in locals():
+                        if download_record:
                             download_record.status = 'failed'
                             download_record.download_completed_at = timezone.now()
                             download_record.error_message = str(chapter_error)
                             download_record.save()
+                        
+                        # 更新任务进度
+                        task.update_progress(
+                            processed=i + 1,
+                            failed=task.failed_items + 1
+                        )
+                        continue
+                    
+                    if result:
+                        # 下载成功
+                        download_record.status = 'completed'
+                        download_record.download_completed_at = timezone.now()
+                        download_record.content_length = result.get('length', 0)
+                        download_record.watermark_removed = result.get('watermark_removed', False)
+                        download_record.save()
+                        
+                        downloaded_chapters.append(result)
+                        
+                        # 更新任务进度
+                        task.update_progress(
+                            processed=i + 1,
+                            success=len(downloaded_chapters)
+                        )
+                    else:
+                        # 下载失败
+                        download_record.status = 'failed'
+                        download_record.download_completed_at = timezone.now()
+                        download_record.error_message = '章节内容为空'
+                        download_record.save()
                         
                         # 更新任务进度
                         task.update_progress(
