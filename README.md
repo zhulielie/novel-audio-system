@@ -37,6 +37,11 @@
 # 进入后端目录
 cd backend
 
+# 复制环境变量模板（必须设置 SECRET_KEY）
+copy ..\.env.example .env
+# 然后编辑 .env，将 SECRET_KEY 替换为随机值：
+# python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+
 # 创建并激活虚拟环境（推荐）
 python -m venv .venv
 .\.venv\Scripts\activate
