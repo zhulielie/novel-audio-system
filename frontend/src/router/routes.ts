@@ -92,6 +92,15 @@ export const constantRoutes: RouteRecordRaw[] = [
           title: '智能爬虫',
           icon: 'MagicStick'
         }
+      },
+      {
+        path: 'batch',
+        name: 'CrawlerBatch',
+        component: () => import('@/views/BatchImportView.vue'),
+        meta: {
+          title: '批量下载',
+          icon: 'Download'
+        }
       }
     ]
   },

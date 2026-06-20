@@ -29,7 +29,7 @@
           <el-menu-item index="/novel-sources">来源管理</el-menu-item>
           <el-menu-item index="/batch-download">📚 批量下载</el-menu-item>
           <el-menu-item index="/batch-import">🚀 智能批量导入</el-menu-item>
-          <el-menu-item index="/integrated-crawler">🧹 整合爬虫系统</el-menu-item>
+          <el-menu-item index="/crawler/integrated">🧹 整合爬虫系统</el-menu-item>
         </el-sub-menu>
         
         <el-sub-menu index="audio">

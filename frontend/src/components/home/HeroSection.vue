@@ -13,7 +13,7 @@
           <el-button type="primary" size="large" @click="$router.push('/novels/list')">
             浏览小说库
           </el-button>
-          <el-button size="large" plain @click="$router.push('/integrated-crawler')">
+          <el-button size="large" plain @click="$router.push('/crawler/integrated')">
             开始爬取
           </el-button>
         </div>
