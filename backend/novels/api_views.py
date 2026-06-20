@@ -410,7 +410,7 @@ class NovelSourceRelationViewSet(viewsets.ModelViewSet):
             'total_relations': total_relations,
             'active_relations': active_relations,
             'recent_synced': recent_synced,
-            'supported_sites': ['example.com', 'biquge.com', '其他通用站点']
+            'supported_sites': ['example.com', '其他通用站点']
         })
     
     @action(detail=False, methods=['post'], permission_classes=[], authentication_classes=[])

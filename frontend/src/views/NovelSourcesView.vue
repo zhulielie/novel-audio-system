@@ -187,7 +187,7 @@
         <el-form-item label="来源类型" required>
           <el-input 
             v-model="sourceForm.source_type" 
-            placeholder="请输入来源类型，如：示例站点、起点中文网等" 
+            placeholder="请输入来源类型，如：示例站点、自定义等" 
           />
         </el-form-item>
         

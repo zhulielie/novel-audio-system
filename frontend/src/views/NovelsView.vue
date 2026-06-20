@@ -229,8 +229,6 @@ const formatDate = (dateString: string) => {
 const getSourceTypeText = (sourceType: string) => {
   const typeMap: Record<string, string> = {
     'example_site': '示例站点',
-    'qidian': '起点中文网',
-    'zongheng': '纵横中文网',
     'custom': '自定义',
   }
   return typeMap[sourceType] || sourceType

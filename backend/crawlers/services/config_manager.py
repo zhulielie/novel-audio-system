@@ -132,82 +132,6 @@ class ConfigManager:
             delay=3000
         )
     
-    def add_qidian_config(self):
-        """添加起点中文网配置：带Referer/Cookie占位，便于登录后采集"""
-        return self.create_site_config(
-            site_key="qidian",
-            site_name="起点中文网",
-            base_url="https://www.qidian.com",
-            title_selector=".j_chapterName",
-            content_selector=".read-content",
-            chapter_list_selector=".volume-wrap .cf a",
-            headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                "Referer": "https://www.qidian.com/",
-                "Cookie": ""  # 需要登录cookie
-            },
-            content_remove_patterns=[
-                r'起点中文网.*?欢迎广大书友光临阅读',
-                r'最新最快最火的连载作品尽在起点原创',
-                r'<script[^>]*>.*?</script>',
-                r'<!--.*?-->'
-            ],
-            delay=5000
-        )
-    
-    def add_zongheng_config(self):
-        """添加纵横中文网配置：通用选择器与清洗规则"""
-        return self.create_site_config(
-            site_key="zongheng",
-            site_name="纵横中文网",
-            base_url="https://www.zongheng.com",
-            title_selector=".title_txtbox",
-            content_selector=".content",
-            chapter_list_selector=".chapter-list a",
-            content_remove_patterns=[
-                r'纵横中文网.*?首发',
-                r'www\.zongheng\.com',
-                r'<script[^>]*>.*?</script>',
-                r'<!--.*?-->'
-            ],
-            delay=4000
-        )
-    
-    def add_17k_config(self):
-        """添加17K小说网配置：标题/内容选择器与广告清理"""
-        return self.create_site_config(
-            site_key="17k",
-            site_name="17K小说网",
-            base_url="https://www.17k.com",
-            title_selector=".readAreaBox .p",
-            content_selector=".readAreaBox .p",
-            chapter_list_selector=".chapter a",
-            content_remove_patterns=[
-                r'17K小说网.*?www\.17k\.com',
-                r'手机用户请浏览.*?阅读',
-                r'<script[^>]*>.*?</script>'
-            ],
-            delay=3000
-        )
-    
-    def add_biquge_config(self):
-        """添加笔趣阁配置：站点标识清除与列表选择器配置"""
-        return self.create_site_config(
-            site_key="biquge",
-            site_name="笔趣阁",
-            base_url="https://www.biquge.com",
-            title_selector=".bookname h1",
-            content_selector="#content",
-            chapter_list_selector=".listmain a",
-            content_remove_patterns=[
-                r'笔趣阁.*?www\.biquge\.com',
-                r'请记住本站域名',
-                r'<script[^>]*>.*?</script>',
-                r'一秒记住.*?'
-            ],
-            delay=2000
-        )
-    
     def add_custom_site(self, site_key, site_name, base_url, selectors, **kwargs):
         """添加自定义网站配置：按传入选择器与参数生成结构化配置"""
         config = self.create_site_config(
@@ -227,20 +151,12 @@ class ConfigManager:
         
         # 添加预设网站配置
         if not sites:
-            sites = ['example_site', 'qidian', 'zongheng', '17k', 'biquge']
-        
+            sites = ['example_site']
+
         for site in sites:
             if site == 'example_site':
                 config['sites']['example_site'] = self.add_example_site_config()
-            elif site == 'qidian':
-                config['sites']['qidian'] = self.add_qidian_config()
-            elif site == 'zongheng':
-                config['sites']['zongheng'] = self.add_zongheng_config()
-            elif site == '17k':
-                config['sites']['17k'] = self.add_17k_config()
-            elif site == 'biquge':
-                config['sites']['biquge'] = self.add_biquge_config()
-        
+
         # 保存配置文件
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(config, f, ensure_ascii=False, indent=2)

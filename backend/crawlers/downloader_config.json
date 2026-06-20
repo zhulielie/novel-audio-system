@@ -32,7 +32,10 @@
       },
       "content_processing": {
         "title_cleanup": {
-          "remove_patterns": ["\\s*第\\d+章\\s*", "\\s*章节\\d+\\s*"],
+          "remove_patterns": [
+            "\\s*第\\d+章\\s*",
+            "\\s*章节\\d+\\s*"
+          ],
           "replace_patterns": {}
         },
         "content_cleanup": {
@@ -63,192 +66,6 @@
         "max_filename_length": 200,
         "fallback_pattern": "章节_{chapter_id}_{timestamp}"
       }
-    },
-    "biquge": {
-      "name": "笔趣阁",
-      "base_url": "https://www.biquge.com",
-      "encoding": "utf-8",
-      "selectors": {
-        "title": ".bookname h1",
-        "content": "#content",
-        "chapter_list": ".listmain a",
-        "next_page": ".next"
-      },
-      "url_patterns": {
-        "chapter_url_pattern": "/book/{book_id}/{chapter_id}.html",
-        "book_url_pattern": "/book/{book_id}/",
-        "relative_url_base": "https://www.biquge.com"
-      },
-      "request_config": {
-        "headers": {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-          "Accept-Language": "zh-CN,zh;q=0.9",
-          "Referer": "https://www.biquge.com/"
-        },
-        "timeout": 25000,
-        "wait_for": "domcontentloaded",
-        "delay_between_requests": 2000,
-        "retry_count": 3,
-        "retry_delay": 3000
-      },
-      "content_processing": {
-        "title_cleanup": {
-          "remove_patterns": ["笔趣阁", "www\\.biquge\\.com"],
-          "replace_patterns": {}
-        },
-        "content_cleanup": {
-          "remove_patterns": [
-            "笔趣阁.*?www\\.biquge\\.com",
-            "请记住本站域名",
-            "一秒记住.*?",
-            "<script[^>]*>.*?</script>",
-            "<style[^>]*>.*?</style>",
-            "<!--.*?-->"
-          ],
-          "normalize_whitespace": true
-        }
-      },
-      "file_naming": {
-        "pattern": "{title}",
-        "max_filename_length": 180,
-        "fallback_pattern": "章节_{chapter_id}_{timestamp}"
-      }
-    },
-    "17k": {
-      "name": "17K小说网",
-      "base_url": "https://www.17k.com",
-      "encoding": "utf-8",
-      "selectors": {
-        "title": ".readAreaBox .p",
-        "content": ".readAreaBox .p",
-        "chapter_list": ".chapter a",
-        "next_page": ".page_next"
-      },
-      "url_patterns": {
-        "chapter_url_pattern": "/chapter/{book_id}/{chapter_id}.html",
-        "book_url_pattern": "/book/{book_id}.html",
-        "relative_url_base": "https://www.17k.com"
-      },
-      "request_config": {
-        "headers": {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-          "Accept-Language": "zh-CN,zh;q=0.9",
-          "Referer": "https://www.17k.com/"
-        },
-        "timeout": 30000,
-        "wait_for": "networkidle",
-        "delay_between_requests": 3000,
-        "retry_count": 4,
-        "retry_delay": 4000
-      },
-      "content_processing": {
-        "title_cleanup": {
-          "remove_patterns": ["17K小说网", "www\\.17k\\.com"],
-          "replace_patterns": {}
-        },
-        "content_cleanup": {
-          "remove_patterns": [
-            "17K小说网.*?www\\.17k\\.com",
-            "手机用户请浏览.*?阅读",
-            "<script[^>]*>.*?</script>",
-            "<style[^>]*>.*?</style>"
-          ],
-          "normalize_whitespace": true
-        }
-      },
-      "file_naming": {
-        "pattern": "{title}",
-        "max_filename_length": 190,
-        "fallback_pattern": "章节_{chapter_id}_{timestamp}"
-      }
-    },
-    "qidian": {
-      "name": "起点中文网",
-      "base_url": "https://www.qidian.com",
-      "encoding": "utf-8",
-      "selectors": {
-        "title": ".j_chapterName",
-        "content": ".read-content",
-        "chapter_list": ".volume-wrap .cf a",
-        "next_page": ".lbf-pagination-next"
-      },
-      "url_patterns": {
-        "book_index": "/book/{book_id}/",
-        "chapter": "/chapter/{book_id}/{chapter_id}/"
-      },
-      "request_config": {
-        "headers": {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-          "Referer": "https://www.qidian.com"
-        },
-        "timeout": 30000,
-        "wait_for": "networkidle",
-        "delay_between_requests": 3000,
-        "retry_count": 5,
-        "retry_delay": 8000
-      },
-      "content_processing": {
-        "title_cleanup": {
-          "remove_patterns": ["^第.*?章\\s*"],
-          "replace_patterns": {}
-        },
-        "content_cleanup": {
-          "remove_elements": [".ad", ".advertisement"],
-          "remove_patterns": ["本章未完.*?"],
-          "normalize_whitespace": true
-        }
-      },
-      "file_naming": {
-        "pattern": "{title}.txt",
-        "fallback_pattern": "章节_{chapter_id}.txt",
-        "max_filename_length": 200
-      }
-    },
-    "zongheng": {
-      "name": "纵横中文网",
-      "base_url": "http://www.zongheng.com",
-      "encoding": "utf-8",
-      "selectors": {
-        "title": ".title_txtbox",
-        "content": ".content",
-        "chapter_list": ".chapter-list a",
-        "next_page": ".next"
-      },
-      "url_patterns": {
-        "book_index": "/book/{book_id}.html",
-        "chapter": "/chapter/{book_id}/{chapter_id}.html"
-      },
-      "request_config": {
-        "headers": {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-        },
-        "timeout": 25000,
-        "wait_for": "networkidle",
-        "delay_between_requests": 2500,
-        "retry_count": 3,
-        "retry_delay": 6000
-      },
-      "content_processing": {
-        "title_cleanup": {
-          "remove_patterns": [],
-          "replace_patterns": {
-            "[\\s]+": " ",
-            "[<>:\"/\\\\|?*]": "_"
-          }
-        },
-        "content_cleanup": {
-          "remove_elements": [".ad"],
-          "remove_patterns": [],
-          "normalize_whitespace": true
-        }
-      },
-      "file_naming": {
-        "pattern": "{title}.txt",
-        "fallback_pattern": "章节_{chapter_id}.txt",
-        "max_filename_length": 200
-      }
     }
   },
   "global_settings": {
@@ -278,8 +95,24 @@
       "footer": "\n\n--- 下载完成 ---"
     },
     "download_report": {
-      "summary_fields": ["total", "success", "failed", "success_rate", "download_time", "site", "book_title"],
-      "detail_fields": ["chapter", "url", "status", "filepath", "retry_count", "timestamp", "error"]
+      "summary_fields": [
+        "total",
+        "success",
+        "failed",
+        "success_rate",
+        "download_time",
+        "site",
+        "book_title"
+      ],
+      "detail_fields": [
+        "chapter",
+        "url",
+        "status",
+        "filepath",
+        "retry_count",
+        "timestamp",
+        "error"
+      ]
     }
   },
   "advanced_features": {
@@ -300,7 +133,11 @@
     "content_validation": {
       "min_content_length": 50,
       "required_keywords": [],
-      "forbidden_keywords": ["404", "页面不存在", "章节不存在"]
+      "forbidden_keywords": [
+        "404",
+        "页面不存在",
+        "章节不存在"
+      ]
     }
   },
   "error_handling": {

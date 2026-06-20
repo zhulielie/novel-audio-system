@@ -251,10 +251,7 @@ export class CrawlerService {
    */
   static getSupportedSites(): string[] {
     return [
-      'example.com - 示例站点网',
-      'biquge.com - 笔趣阁',
-      'qidian.com - 起点中文网',
-      'zongheng.com - 纵横中文网',
+      'example.com - 示例站点',
       '通用小说网站 (自动识别)'
     ]
   }

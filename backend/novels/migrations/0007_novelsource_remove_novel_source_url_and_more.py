@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=100, verbose_name='来源名称')),
-                ('source_type', models.CharField(choices=[('example_site', '示例站点'), ('qidian', '起点中文网'), ('zongheng', '纵横中文网'), ('custom', '自定义')], default='example_site', max_length=20, verbose_name='来源类型')),
+                ('source_type', models.CharField(choices=[('example_site', '示例站点'), ('custom', '自定义')], default='example_site', max_length=20, verbose_name='来源类型')),
                 ('base_url', models.URLField(verbose_name='基础URL')),
                 ('chapter_url_pattern', models.CharField(blank=True, max_length=200, verbose_name='章节URL模式')),
                 ('encoding', models.CharField(default='utf-8', max_length=20, verbose_name='页面编码')),
