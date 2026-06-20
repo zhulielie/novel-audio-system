@@ -386,8 +386,8 @@ class MCPClientService:
     """MCP客户端服务类"""
 
     def __init__(self):
-        self.base_url = "https://www.hetushu.com"
-        self.book_url = "https://www.hetushu.com/book/38/24721.html"
+        self.base_url = "https://www.example.com"
+        self.book_url = "https://www.example.com/book/38/24721.html"
 
     def get_page_content(self, url):
         """使用备用方案获取页面内容（已修复MCP问题）"""
@@ -523,8 +523,8 @@ class MCPClientService:
                 print("🚫 遇到403错误，尝试其他方法...")
 
                 # 方法2: 添加更多浏览器特征
-                headers['Referer'] = 'https://www.hetushu.com/'
-                headers['Host'] = 'www.hetushu.com'
+                headers['Referer'] = 'https://www.example.com/'
+                headers['Host'] = 'www.example.com'
 
                 time.sleep(2)
                 response = session.get(url, headers=headers, timeout=30)

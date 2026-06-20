@@ -381,7 +381,7 @@ class UnifiedCrawler:
             return result
             
         except Exception as e:
-            print(f"❌ 和图书网章节解析失败: {str(e)}")
+            print(f"❌ 示例站点网章节解析失败: {str(e)}")
             return None
     
     def _parse_generic_chapter(self, soup: BeautifulSoup, url: str) -> Optional[Dict]:
@@ -490,8 +490,8 @@ class UnifiedCrawler:
 
 
 # 为了兼容性，保留原有的类名
-class HetushuCrawler(UnifiedCrawler):
-    """和图书网爬虫 - 兼容性别名"""
+class ExampleSiteCrawler(UnifiedCrawler):
+    """示例站点网爬虫 - 兼容性别名"""
     pass
 
 

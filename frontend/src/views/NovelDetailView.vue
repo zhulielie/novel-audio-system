@@ -36,7 +36,7 @@ const batchImportForm = ref<{
   source_id: number | null
   max_chapters: number
 }>({
-  source_id: 1, // 默认选择和图书网 (ID: 1)
+  source_id: 1, // 默认选择示例站点网 (ID: 1)
   max_chapters: 100
 })
 const availableSources = ref<any[]>([])
@@ -508,7 +508,7 @@ onMounted(() => {
               <li>⏱️ 自动控制爬取速度(2-5秒延时)避免被封</li>
               <li>🔗 每个章节都会记录源链接</li>
               <li>🔄 支持断点续传，跳过已存在章节</li>
-              <li>🧪 默认使用和图书网进行测试</li>
+              <li>🧪 默认使用示例站点网进行测试</li>
             </ul>
           </el-alert>
         </el-form>

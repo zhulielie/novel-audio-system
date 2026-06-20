@@ -9,7 +9,7 @@ import { apiService } from '@/services/api'
 // 示例1: 基本URL分析
 export const exampleUrlAnalysis = async () => {
   try {
-    const url = 'https://www.hetushu.com/book/38/26125.html'
+    const url = 'https://www.example.com/book/38/26125.html'
     console.log('🔍 分析小说URL:', url)
 
     const result = await CrawlerService.analyzeUrl(url)
@@ -31,7 +31,7 @@ export const exampleUrlAnalysis = async () => {
 // 示例2: 快速批量导入
 export const exampleQuickImport = async () => {
   try {
-    const url = 'https://www.hetushu.com/book/38/26125.html'
+    const url = 'https://www.example.com/book/38/26125.html'
 
     console.log('🚀 开始快速导入...')
 
@@ -57,10 +57,10 @@ export const exampleQuickImport = async () => {
 export const exampleAdvancedImport = async () => {
   try {
     const importParams = {
-      source_url: 'https://www.hetushu.com/book/38/26125.html',
+      source_url: 'https://www.example.com/book/38/26125.html',
       novel_title: '测试小说',
       novel_author: '测试作者',
-      source_id: 1,  // 和图书网
+      source_id: 1,  // 示例站点网
       max_chapters: 50,  // 最多导入50章
       start_chapter: 1,  // 从第1章开始
       end_chapter: 50,   // 到第50章结束
@@ -165,7 +165,7 @@ const analyzeUrl = async () => {
   analyzing.value = true
   try {
     const result = await CrawlerService.analyzeUrl(
-      'https://www.hetushu.com/book/38/26125.html'
+      'https://www.example.com/book/38/26125.html'
     )
     analysisResult.value = result
   } catch (error) {
@@ -181,7 +181,7 @@ const quickImport = async () => {
   importing.value = true
   try {
     const result = await CrawlerService.quickImport(
-      'https://www.hetushu.com/book/38/26125.html',
+      'https://www.example.com/book/38/26125.html',
       { max_chapters: 10, speed: 'normal' }
     )
     console.log('导入结果:', result)

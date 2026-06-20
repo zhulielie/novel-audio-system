@@ -155,7 +155,7 @@ const recentLogs = ref<any[]>([])
 
 // 表单
 const analysisForm = ref({
-  url: 'https://www.hetushu.com/book/38/26125.html'
+  url: 'https://www.example.com/book/38/26125.html'
 })
 
 const analysisResult = ref<UrlAnalysisResult | null>(null)

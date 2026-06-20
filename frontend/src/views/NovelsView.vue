@@ -228,7 +228,7 @@ const formatDate = (dateString: string) => {
 // 获取来源类型文本
 const getSourceTypeText = (sourceType: string) => {
   const typeMap: Record<string, string> = {
-    'hetushu': '和图书',
+    'example_site': '示例站点',
     'qidian': '起点中文网',
     'zongheng': '纵横中文网',
     'custom': '自定义',

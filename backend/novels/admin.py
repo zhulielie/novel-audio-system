@@ -13,8 +13,8 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 try:
-    from pachong.hetushu_quick_crawler import HetuShuQuickCrawler
-    from pachong.hetushu_book_crawler import HetuShuBookCrawler
+    from pachong.example_site_quick_crawler import ExampleSiteQuickCrawler
+    from pachong.example_site_book_crawler import ExampleSiteBookCrawler
     from pachong.universal_novel_downloader import UniversalNovelDownloader
 except ImportError as e:
     print(f"Warning: Could not import pachong crawlers: {e}")
@@ -239,7 +239,7 @@ class NovelSourceAdmin(admin.ModelAdmin):
     list_filter = ['source_type', 'is_active', 'created_at']
     search_fields = ['name', 'base_url']
     readonly_fields = ['crawl_count', 'last_crawl_at', 'created_at']
-    actions = ['test_source_connection', 'update_source_stats', 'analyze_website_with_llm', 'test_hetushu_link', 'smart_import_from_hetushu', 'pachong_quick_crawl', 'pachong_book_crawl']
+    actions = ['test_source_connection', 'update_source_stats', 'analyze_website_with_llm', 'test_example_site_link', 'smart_import_from_example_site', 'pachong_quick_crawl', 'pachong_book_crawl']
 
     fieldsets = [
         ('基本信息', {
@@ -378,30 +378,30 @@ class NovelSourceAdmin(admin.ModelAdmin):
 
     analyze_website_with_llm.short_description = '🧠 LLM智能分析'
     
-    def test_hetushu_link(self, request, queryset):
-        """测试和图书网链接 - 专门处理用户提供的链接"""
+    def test_example_site_link(self, request, queryset):
+        """测试示例站点网链接 - 专门处理用户提供的链接"""
         # 直接测试用户提供的链接
-        test_url = "https://www.hetushu.com/book/38/26125.html"
+        test_url = "https://www.example.com/book/38/26125.html"
         
         self.message_user(
             request,
-            f'🔍 开始测试和图书网链接: {test_url}',
+            f'🔍 开始测试示例站点网链接: {test_url}',
             messages.INFO
         )
         
         try:
             # 使用新的pachong爬虫系统
-            from hetushu_quick_crawler import HetuShuQuickCrawler
+            from example_site_quick_crawler import ExampleSiteQuickCrawler
             
             # 创建智能爬虫实例
-            crawler = HetuShuQuickCrawler()
+            crawler = ExampleSiteQuickCrawler()
             
             # 智能分析URL
             analysis_result = crawler.smart_url_analyzer(test_url)
             
             if analysis_result.get('success'):
                 success_msg = (
-                    f'✅ 和图书网链接分析成功!\n'
+                    f'✅ 示例站点网链接分析成功!\n'
                     f'📚 小说标题: {analysis_result.get("title", "未检测到")}\n'
                     f'👤 作者: {analysis_result.get("author", "未检测到")}\n'
                     f'📑 检测章节数: {analysis_result.get("chapter_count", 0)}\n'
@@ -428,23 +428,23 @@ class NovelSourceAdmin(admin.ModelAdmin):
                 messages.ERROR
             )
     
-    test_hetushu_link.short_description = '🧪 测试和图书网链接'
+    test_example_site_link.short_description = '🧪 测试示例站点网链接'
     
-    def smart_import_from_hetushu(self, request, queryset):
-        """从和图书网智能导入小说"""
-        test_url = "https://www.hetushu.com/book/38/26125.html"
+    def smart_import_from_example_site(self, request, queryset):
+        """从示例站点网智能导入小说"""
+        test_url = "https://www.example.com/book/38/26125.html"
         
         try:
             # 使用新的pachong爬虫系统
-            from hetushu_quick_crawler import HetuShuQuickCrawler
+            from example_site_quick_crawler import ExampleSiteQuickCrawler
             from .models import Novel, NovelSource, NovelSourceRelation
             
-            # 先获取或创建和图书网来源
-            hetushu_source, created = NovelSource.objects.get_or_create(
-                name='和图书网',
+            # 先获取或创建示例站点网来源
+            example_site_source, created = NovelSource.objects.get_or_create(
+                name='示例站点网',
                 defaults={
-                    'source_type': '和图书',
-                    'base_url': 'https://www.hetushu.com',
+                    'source_type': '示例站点',
+                    'base_url': 'https://www.example.com',
                     'chapter_url_pattern': '/book/{book_id}/{chapter_id}.html',
                     'encoding': 'utf-8',
                     'is_active': True,
@@ -453,10 +453,10 @@ class NovelSourceAdmin(admin.ModelAdmin):
             )
             
             if created:
-                self.message_user(request, '✅ 已创建和图书网来源', messages.SUCCESS)
+                self.message_user(request, '✅ 已创建示例站点网来源', messages.SUCCESS)
             
             # 创建智能爬虫
-            crawler = HetuShuQuickCrawler()
+            crawler = ExampleSiteQuickCrawler()
             
             # 先分析URL获取小说信息
             analysis_result = crawler.smart_url_analyzer(test_url)
@@ -466,7 +466,7 @@ class NovelSourceAdmin(admin.ModelAdmin):
                 return
             
             # 创建小说标题（如果分析不到，使用默认标题）
-            novel_title = analysis_result.get('title') or '测试和图书网智能爬取'
+            novel_title = analysis_result.get('title') or '测试示例站点网智能爬取'
             novel_author = analysis_result.get('author') or '测试作者'
             
             # 创建或获取小说
@@ -485,7 +485,7 @@ class NovelSourceAdmin(admin.ModelAdmin):
             # 创建来源关联
             relation, created = NovelSourceRelation.objects.get_or_create(
                 novel=novel,
-                source=hetushu_source,
+                source=example_site_source,
                 defaults={
                     'source_url': test_url,
                     'is_primary': True
@@ -497,7 +497,7 @@ class NovelSourceAdmin(admin.ModelAdmin):
             
             result = crawler.batch_import_chapters(
                 novel=novel,
-                source=hetushu_source,
+                source=example_site_source,
                 max_chapters=5  # 限制5章用于测试
             )
             
@@ -517,16 +517,16 @@ class NovelSourceAdmin(admin.ModelAdmin):
         except Exception as e:
             self.message_user(request, f'❌ 智能导入出错: {str(e)}', messages.ERROR)
     
-    smart_import_from_hetushu.short_description = '🤖 智能导入和图书网小说'
+    smart_import_from_example_site.short_description = '🤖 智能导入示例站点网小说'
 
     def pachong_quick_crawl(self, request, queryset):
         """使用pachong快速爬虫爬取书籍列表"""
         try:
-            crawler = HetuShuQuickCrawler()
+            crawler = ExampleSiteQuickCrawler()
             success_count = 0
             
             for source in queryset:
-                if 'hetushu' in source.base_url.lower():
+                if 'example_site' in source.base_url.lower():
                     # 爬取玄幻小说分类
                     books = crawler.crawl_category('玄幻小说', limit=10)
                     
@@ -579,13 +579,13 @@ class NovelSourceAdmin(admin.ModelAdmin):
     def pachong_book_crawl(self, request, queryset):
         """使用pachong详细爬虫爬取指定书籍"""
         try:
-            crawler = HetuShuBookCrawler()
+            crawler = ExampleSiteBookCrawler()
             success_count = 0
             
             for source in queryset:
-                if 'hetushu' in source.base_url.lower():
+                if 'example_site' in source.base_url.lower():
                     # 这里需要从source_url中提取book_id
-                    # 假设URL格式为 https://www.hetushu.com/book/1234/index.html
+                    # 假设URL格式为 https://www.example.com/book/1234/index.html
                     import re
                     url_match = re.search(r'/book/(\d+)/', source.base_url)
                     if url_match:
@@ -728,10 +728,10 @@ class NovelSourceRelationAdmin(admin.ModelAdmin):
                 )
                 
                 # 使用新的pachong爬虫系统
-                from hetushu_quick_crawler import HetuShuQuickCrawler
+                from example_site_quick_crawler import ExampleSiteQuickCrawler
                 
                 # 创建爬虫实例
-                crawler = HetuShuQuickCrawler()
+                crawler = ExampleSiteQuickCrawler()
                 
                 self.message_user(
                     request,
@@ -831,16 +831,16 @@ class NovelSourceRelationAdmin(admin.ModelAdmin):
                     messages.INFO
                 )
                 
-                # 检查是否为和图书网链接
-                if 'hetushu' in relation.source_url.lower():
-                    # 使用和图书网爬虫
-                    from pachong.hetushu_book_crawler import HetuShuBookCrawler
+                # 检查是否为示例站点网链接
+                if 'example_site' in relation.source_url.lower():
+                    # 使用示例站点网爬虫
+                    from pachong.example_site_book_crawler import ExampleSiteBookCrawler
                     
-                    async def crawl_hetushu():
+                    async def crawl_example_site():
                          async with async_playwright() as p:
                              browser = await p.chromium.launch(headless=False)
                              try:
-                                 crawler = HetuShuBookCrawler()
+                                 crawler = ExampleSiteBookCrawler()
                                  # 使用crawl_category方法，从URL中提取分类
                                  category = "全部小说"  # 默认分类
                                  chapters = await crawler.crawl_category(browser, category)
@@ -849,7 +849,7 @@ class NovelSourceRelationAdmin(admin.ModelAdmin):
                                  await browser.close()
                     
                     # 运行异步爬取
-                    chapters = asyncio.run(crawl_hetushu())
+                    chapters = asyncio.run(crawl_example_site())
                     
                     if chapters:
                         # 保存章节
@@ -901,7 +901,7 @@ class NovelSourceRelationAdmin(admin.ModelAdmin):
                             f'📚 小说: {relation.novel.title}\n'
                             f'📊 新增章节: {saved_count} 章\n'
                             f'🔗 来源: {relation.source_url}\n'
-                            f'⏱️ 使用: 和图书网专用爬虫'
+                            f'⏱️ 使用: 示例站点网专用爬虫'
                         )
                         self.message_user(request, success_msg, messages.SUCCESS)
                         success_count += 1
@@ -1110,16 +1110,16 @@ class NovelSourceRelationAdmin(admin.ModelAdmin):
                     messages.INFO
                 )
                 
-                # 检查是否为和图书网链接
-                if 'hetushu' in relation.source_url.lower():
-                    # 使用和图书网爬虫
-                    from pachong.hetushu_book_crawler import HetuShuBookCrawler
+                # 检查是否为示例站点网链接
+                if 'example_site' in relation.source_url.lower():
+                    # 使用示例站点网爬虫
+                    from pachong.example_site_book_crawler import ExampleSiteBookCrawler
                     
-                    async def crawl_hetushu_with_options():
+                    async def crawl_example_site_with_options():
                         async with async_playwright() as p:
                             browser = await p.chromium.launch(headless=False)
                             try:
-                                crawler = HetuShuBookCrawler()
+                                crawler = ExampleSiteBookCrawler()
                                 # 应用自定义配置
                                 crawler.delay_between_requests = options['delay_between_requests']
                                 crawler.retry_count = options['retry_count']
@@ -1138,7 +1138,7 @@ class NovelSourceRelationAdmin(admin.ModelAdmin):
                             finally:
                                 await browser.close()
                     
-                    chapters = asyncio.run(crawl_hetushu_with_options())
+                    chapters = asyncio.run(crawl_example_site_with_options())
                     
                 else:
                     # 使用通用爬虫
@@ -1475,10 +1475,10 @@ class NovelAdmin(admin.ModelAdmin):
                 for relation in primary_sources:
                     try:
                         # 使用新的pachong爬虫系统
-                        from hetushu_quick_crawler import HetuShuQuickCrawler
+                        from example_site_quick_crawler import ExampleSiteQuickCrawler
                         
                         # 创建爬虫实例
-                        crawler = HetuShuQuickCrawler()
+                        crawler = ExampleSiteQuickCrawler()
                         
                         self.message_user(
                             request,

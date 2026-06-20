@@ -179,8 +179,8 @@ const router = useRouter()
 
 // 表单数据
 const importForm = ref({
-  sourceId: 1, // 默认选择和图书网
-  novelUrl: 'https://www.hetushu.com/book/38/26125.html', // 预设用户提供的链接
+  sourceId: 1, // 默认选择示例站点网
+  novelUrl: 'https://www.example.com/book/38/26125.html', // 预设用户提供的链接
   chapterLimitType: 'before', // 默认选择前N章
   beforeChapter: 5, // 默认5章用于测试
   afterChapter: 1,

@@ -3,7 +3,7 @@
     <el-card class="crawler-card">
       <template #header>
         <div class="card-header">
-          <span>🚀 粘贴和图书 URL，一键下载章节</span>
+          <span>🚀 粘贴示例站点 URL，一键下载章节</span>
           <el-tag type="success" size="small">支持去水印</el-tag>
         </div>
       </template>
@@ -14,7 +14,7 @@
           <el-form-item label="小说链接" prop="sourceUrl">
             <el-input 
               v-model="crawlerForm.sourceUrl" 
-              placeholder="请输入和图书网小说目录页URL"
+              placeholder="请输入示例站点网小说目录页URL"
               type="url"
             >
               <template #append>
@@ -45,7 +45,7 @@
                 <el-tag type="warning">{{ catalogData.chapters?.length || 0 }} 章</el-tag>
               </el-descriptions-item>
               <el-descriptions-item label="来源">
-                <el-tag type="success">和图书网</el-tag>
+                <el-tag type="success">示例站点网</el-tag>
               </el-descriptions-item>
             </el-descriptions>
             
@@ -142,7 +142,7 @@
         <!-- Demo fallback：目录提取失败时仍可一键导入 -->
         <div v-if="!catalogData && crawlerForm.sourceUrl" class="action-buttons fallback-buttons" style="margin-top: 10px;">
           <el-alert
-            title="若和图书被 Cloudflare 拦截，可点击下方按钮使用本地示例数据继续体验"
+            title="若示例站点被 Cloudflare 拦截，可点击下方按钮使用本地示例数据继续体验"
             type="info"
             :closable="false"
             show-icon
@@ -170,7 +170,7 @@
       :close-on-press-escape="false"
     >
       <div style="line-height: 1.8;">
-        <p>和图书站当前启用了 Cloudflare 防护，自动爬虫无法直接访问。</p>
+        <p>示例站点站当前启用了 Cloudflare 防护，自动爬虫无法直接访问。</p>
         <p>请点击下方按钮在您的真实浏览器中打开该页面，完成验证（如点击“我不是机器人”）后，再点击“继续提取”。</p>
         <p style="margin-top: 12px; word-break: break-all; color: #666;">
           <strong>目标 URL：</strong>{{ crawlerForm.sourceUrl }}
@@ -278,7 +278,7 @@
             </el-descriptions>
             <el-alert
               v-if="downloadResult.use_local_fallback"
-              title="和图书当前有 Cloudflare 保护，已自动使用 Demo 本地示例数据完成导入"
+              title="示例站点当前有 Cloudflare 保护，已自动使用 Demo 本地示例数据完成导入"
               type="warning"
               :closable="false"
               show-icon

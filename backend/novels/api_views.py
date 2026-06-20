@@ -94,8 +94,8 @@ class NovelViewSet(viewsets.ModelViewSet):
             
             # 使用新的pachong爬虫系统
             try:
-                from hetushu_quick_crawler import HetuShuQuickCrawler
-                crawler = HetuShuQuickCrawler()
+                from example_site_quick_crawler import ExampleSiteQuickCrawler
+                crawler = ExampleSiteQuickCrawler()
                 result = crawler.batch_import_chapters(
                     novel=novel,
                     source=source,
@@ -144,8 +144,8 @@ class NovelViewSet(viewsets.ModelViewSet):
                 import os
                 crawler_path = os.path.join(os.path.dirname(__file__), '..', 'crawlers')
                 sys.path.insert(0, crawler_path)
-                from unified_crawler import HetushuCrawler
-                crawler = HetushuCrawler()
+                from unified_crawler import ExampleSiteCrawler
+                crawler = ExampleSiteCrawler()
             except ImportError as e:
                 return Response({
                     'success': False,
@@ -172,7 +172,7 @@ class NovelViewSet(viewsets.ModelViewSet):
                     'title': novel_info.get('title', '未知小说'),
                     'author': novel_info.get('author', ''),
                     'chapter_count': chapter_count,
-                    'description': f'来自和图书网的小说《{novel_info.get("title", "")}》',
+                    'description': f'来自示例站点网的小说《{novel_info.get("title", "")}》',
                     'catalog_url': source_url,
                     'message': '小说信息分析成功'
                 })
@@ -215,9 +215,9 @@ class NovelSourceRelationViewSet(viewsets.ModelViewSet):
         
         try:
             # 检测网站类型并选择合适的爬虫
-            if 'hetushu.com' in relation.source_url:
-                # 使用和图书爬虫
-                crawler = HetuShuBookCrawler()
+            if 'example.com' in relation.source_url:
+                # 使用示例站点爬虫
+                crawler = ExampleSiteBookCrawler()
                 chapters = crawler.crawl_book_chapters(relation.source_url)
                 
                 # 保存章节
@@ -245,7 +245,7 @@ class NovelSourceRelationViewSet(viewsets.ModelViewSet):
                     'success': True,
                     'message': f'成功爬取 {saved_count} 个新章节',
                     'total_chapters': relation.chapter_count,
-                    'crawler_type': 'hetushu'
+                    'crawler_type': 'example_site'
                 })
             else:
                 # 使用通用爬虫
@@ -301,9 +301,9 @@ class NovelSourceRelationViewSet(viewsets.ModelViewSet):
         
         try:
             # 检测网站类型并选择合适的爬虫
-            if 'hetushu.com' in relation.source_url:
-                # 使用和图书爬虫
-                crawler = HetuShuBookCrawler()
+            if 'example.com' in relation.source_url:
+                # 使用示例站点爬虫
+                crawler = ExampleSiteBookCrawler()
                 chapters = crawler.crawl_book_chapters(
                     relation.source_url,
                     max_chapters=max_chapters,
@@ -410,7 +410,7 @@ class NovelSourceRelationViewSet(viewsets.ModelViewSet):
             'total_relations': total_relations,
             'active_relations': active_relations,
             'recent_synced': recent_synced,
-            'supported_sites': ['hetushu.com', 'biquge.com', '其他通用站点']
+            'supported_sites': ['example.com', 'biquge.com', '其他通用站点']
         })
     
     @action(detail=False, methods=['post'], permission_classes=[], authentication_classes=[])
@@ -424,7 +424,7 @@ class NovelSourceRelationViewSet(viewsets.ModelViewSet):
             source_url = data.get('source_url', '').strip()
             novel_title = data.get('novel_title', '').strip()
             author = data.get('novel_author', '').strip() or data.get('author', '').strip()
-            source_id = data.get('source_id', 1)  # 默认使用和图书网
+            source_id = data.get('source_id', 1)  # 默认使用示例站点网
             
             # 章节限制参数
             max_chapters = data.get('max_chapters')
@@ -452,13 +452,13 @@ class NovelSourceRelationViewSet(viewsets.ModelViewSet):
             try:
                 source = NovelSource.objects.get(id=source_id)
             except NovelSource.DoesNotExist:
-                # 如果指定的来源不存在，使用默认的和图书网
+                # 如果指定的来源不存在，使用默认的示例站点网
                 source, _ = NovelSource.objects.get_or_create(
                     id=1,
                     defaults={
-                        'name': '和图书网',
-                        'source_type': '和图书',
-                        'base_url': 'https://www.hetushu.com',
+                        'name': '示例站点网',
+                        'source_type': '示例站点',
+                        'base_url': 'https://www.example.com',
                         'chapter_url_pattern': '/book/{book_id}/{chapter_id}.html',
                         'encoding': 'utf-8',
                         'is_active': True
@@ -584,8 +584,8 @@ class NovelSourceRelationViewSet(viewsets.ModelViewSet):
                 import os
                 crawler_path = os.path.join(os.path.dirname(__file__), '..', 'crawlers')
                 sys.path.insert(0, crawler_path)
-                from unified_crawler import HetushuCrawler
-                crawler = HetushuCrawler()
+                from unified_crawler import ExampleSiteCrawler
+                crawler = ExampleSiteCrawler()
             except ImportError as e:
                 return Response({
                     'success': False,
@@ -612,7 +612,7 @@ class NovelSourceRelationViewSet(viewsets.ModelViewSet):
                     'title': novel_info.get('title', '未知小说'),
                     'author': novel_info.get('author', ''),
                     'chapter_count': chapter_count,
-                    'description': f'来自和图书网的小说《{novel_info.get("title", "")}》',
+                    'description': f'来自示例站点网的小说《{novel_info.get("title", "")}》',
                     'catalog_url': source_url,
                     'message': '小说信息分析成功'
                 })
@@ -923,7 +923,7 @@ def test_batch_import(request):
         source_url = data.get('source_url', '').strip()
         novel_title = data.get('novel_title', '').strip()
         author = data.get('novel_author', '').strip() or data.get('author', '').strip()
-        source_id = data.get('source_id', 1)  # 默认使用和图书网
+        source_id = data.get('source_id', 1)  # 默认使用示例站点网
         
         # 章节限制参数
         max_chapters = data.get('max_chapters')
@@ -945,8 +945,8 @@ def test_batch_import(request):
             import os
             crawler_path = os.path.join(os.path.dirname(__file__), '..', 'crawlers')
             sys.path.insert(0, crawler_path)
-            from unified_crawler import HetushuCrawler
-            crawler = HetushuCrawler()
+            from unified_crawler import ExampleSiteCrawler
+            crawler = ExampleSiteCrawler()
             print(f'🕷️ 爬虫初始化成功，准备解析: {source_url}')
         except ImportError as e:
             print(f'❌ 爬虫模块导入失败: {str(e)}')

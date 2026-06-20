@@ -52,7 +52,7 @@
             "example_site\\.com",
             "www\\.example_site\\.com",
             "和\\*图\\*书",
-            "_图_书",
+            "_示例_站点",
             "\\.[cC][oO][mM]"
           ],
           "normalize_whitespace": true

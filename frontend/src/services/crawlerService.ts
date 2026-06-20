@@ -230,7 +230,7 @@ export class CrawlerService {
         source_url: url,
         novel_title: analysis.title || '未知小说',
         novel_author: analysis.author,
-        source_id: 1, // 默认使用和图书网
+        source_id: 1, // 默认使用示例站点网
         ...options
       }
 
@@ -251,7 +251,7 @@ export class CrawlerService {
    */
   static getSupportedSites(): string[] {
     return [
-      'hetushu.com - 和图书网',
+      'example.com - 示例站点网',
       'biquge.com - 笔趣阁',
       'qidian.com - 起点中文网',
       'zongheng.com - 纵横中文网',

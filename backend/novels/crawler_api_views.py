@@ -90,13 +90,13 @@ class CrawlerAPIViewSet(viewsets.ViewSet):
                         'message': f'成功提取目录，共 {len(catalog_data.get("chapters", []))} 章'
                     })
                 else:
-                    # 任务失败：和图书等站点可能返回了页面但无章节，提示人工绕过
+                    # 任务失败：示例站点等站点可能返回了页面但无章节，提示人工绕过
                     task.status = 'failed'
                     task.completed_at = timezone.now()
                     task.error_message = '无法提取目录信息'
                     task.save()
                     
-                    if 'hetushu.com' in source_url:
+                    if 'example.com' in source_url:
                         return Response({
                             'success': False,
                             'needs_manual_bypass': True,
@@ -125,7 +125,7 @@ class CrawlerAPIViewSet(viewsets.ViewSet):
                     'task_id': task_id,
                     'source_url': source_url,
                     'error': str(e),
-                    'message': '和图书站被 Cloudflare 拦截，请在真实浏览器中完成验证后继续'
+                    'message': '示例站点站被 Cloudflare 拦截，请在真实浏览器中完成验证后继续'
                 }, status=status.HTTP_403_FORBIDDEN)
                 
             except Exception as e:

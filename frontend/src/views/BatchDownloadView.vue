@@ -17,7 +17,7 @@
             <input 
               v-model="singleUrl" 
               type="url" 
-              placeholder="请输入小说链接，如：https://www.hetushu.com/book/123/"
+              placeholder="请输入小说链接，如：https://www.example.com/book/123/"
               class="url-input"
               @keyup.enter="addSingleDownload"
             />
@@ -42,7 +42,7 @@
           <h3>📋 批量添加（一行一个链接）</h3>
           <textarea 
             v-model="batchUrls" 
-            placeholder="每行一个链接，格式：&#10;https://www.hetushu.com/book/123/ 小说名称1&#10;https://www.hetushu.com/book/456/ 小说名称2"
+            placeholder="每行一个链接，格式：&#10;https://www.example.com/book/123/ 小说名称1&#10;https://www.example.com/book/456/ 小说名称2"
             class="batch-textarea"
             rows="5"
           ></textarea>
