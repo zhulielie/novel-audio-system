@@ -758,7 +758,7 @@ def quick_crawl(request):
             task.result_data['chapters_imported'] = imported_count
             task.save()
 
-            message = f'快速导入完成！小说《{novel.title}》已成功导入 {imported_count} 章'
+            message = f'快速导入完成！小说《{novel.title}》共处理 {len(downloaded_chapters)} 章，新增 {imported_count} 章'
             if use_local_fallback:
                 message += '（当前和图书有 Cloudflare 保护，已使用 Demo 本地示例数据）'
 

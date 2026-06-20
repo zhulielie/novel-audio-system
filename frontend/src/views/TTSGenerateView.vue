@@ -331,13 +331,20 @@ onMounted(async () => {
   fetchEngines()
   fetchTasks()
 
-  // 从爬虫页面跳转过来时自动选择小说
+  // 从爬虫页面跳转过来时自动选择小说和第一章
   const queryNovelId = route.query.novel_id
   if (queryNovelId) {
     const novelId = Number(queryNovelId)
     const novel = novels.value.find((n: any) => n.id === novelId)
     if (novel) {
       selectedNovel.value = novelId
+      // 章节列表加载后自动选择第一章
+      const unwatch = watch(chapters, (list) => {
+        if (list && list.length > 0) {
+          selectedChapter.value = list[0].id
+          unwatch()
+        }
+      })
     }
   }
 })

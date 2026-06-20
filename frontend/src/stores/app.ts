@@ -24,7 +24,7 @@ export const useAppStore = defineStore('app', () => {
   
   const device = ref<'desktop' | 'mobile'>('desktop')
   const size = ref<'large' | 'default' | 'small'>('default')
-  const tagsView = ref(true)
+  const tagsView = ref(false)
   const fixedHeader = ref(false)
   const sidebarLogo = ref(true)
 
