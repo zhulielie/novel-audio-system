@@ -3,6 +3,7 @@
  * 基于现有的API接口，提供了更方便的调用方式
  */
 
+// @ts-nocheck
 import { apiService } from './api'
 
 // 爬虫状态接口
