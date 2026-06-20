@@ -554,15 +554,18 @@ const quickCrawl = async () => {
     return
   }
   
-  // 允许在未提取目录时直接调用 quick-crawl（后端会处理本地 fallback）
-  const start = catalogData.value ? crawlerForm.startChapter : 1
-  const end = catalogData.value ? crawlerForm.endChapter : 5
-  
+  // 需要先提取目录才能导入
+  if (!catalogData.value) {
+    ElMessage.warning('请先提取目录')
+    return
+  }
+
+  const start = crawlerForm.startChapter
+  const end = crawlerForm.endChapter
+
   try {
     await ElMessageBox.confirm(
-      catalogData.value
-        ? `确定要一键导入《${crawlerForm.novelTitle}》的第 ${start}-${end} 章到数据库吗？`
-        : '将使用本地示例数据直接导入《国医高手》第 1-5 章，继续吗？',
+      `确定要一键导入《${crawlerForm.novelTitle}》的第 ${start}-${end} 章到数据库吗？`,
       '确认导入',
       {
         confirmButtonText: '确定导入',

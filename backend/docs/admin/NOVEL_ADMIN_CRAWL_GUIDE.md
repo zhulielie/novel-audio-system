@@ -102,9 +102,9 @@ http://localhost:8000/admin/novels/novel/
 
 ### 日志格式
 ```
-✅ 小说 "斗破苍穹" 爬取成功: 新增 2453 章
+✅ 小说 "示例小说" 爬取成功: 新增 2453 章
 ❌ 小说 "测试小说" 爬取失败: HTTP错误: 404
-🔍 小说 "完美世界" 检测到来源链接: https://www.hetushu.com/book/1/123.html
+🔍 小说 "另一部示例小说" 检测到来源链接: https://www.example.com/book/1/123.html
 ```
 
 ## 🛠️ 高级配置

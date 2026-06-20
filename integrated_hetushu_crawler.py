@@ -419,8 +419,8 @@ def main():
     
     crawler = IntegratedHetuShuCrawler()
     
-    # 目录文件
-    catalog_file = "hetushu_国医高手_catalog.json"
+    # 目录文件 - 请替换为你自己生成的目录文件
+    catalog_file = "catalog.json"
     
     # 检查目录文件是否存在
     if not os.path.exists(catalog_file):
@@ -445,7 +445,6 @@ def main():
     
     if chapters:
         print(f"\n🎉 下载任务完成!")
-        print(f"📚 书名: 国医高手")
         print(f"📑 下载章节: 第{start_chapter}-{end_chapter}章")
         print(f"✅ 成功下载: {len(chapters)} 章")
         print(f"🧹 已应用去水印技术")

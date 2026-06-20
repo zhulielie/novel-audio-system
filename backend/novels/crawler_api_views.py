@@ -661,82 +661,6 @@ class CrawlerAPIViewSet(viewsets.ViewSet):
         })
 
 
-def _get_local_demo_chapters(source_url, start_chapter, end_chapter):
-    """Demo 本地缓存 fallback：当和图书在线爬取被 Cloudflare 拦截时使用"""
-    import re
-    from pathlib import Path
-
-    # book_id -> 本地缓存目录映射
-    cache_map = {
-        '1311': 'hetushu_国医高手_第1-5章_去水印版',
-    }
-
-    book_id_match = re.search(r'/book/(\d+)/', source_url)
-    if not book_id_match:
-        return None
-
-    book_id = book_id_match.group(1)
-    cache_dir_name = cache_map.get(book_id)
-    if not cache_dir_name:
-        return None
-
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.dirname(os.path.dirname(current_dir))
-    cache_dir = os.path.join(project_root, cache_dir_name)
-
-    if not os.path.isdir(cache_dir):
-        return None
-
-    chapters = []
-    for filename in sorted(os.listdir(cache_dir)):
-        if not filename.endswith('.txt') or '合并版' in filename:
-            continue
-
-        num_match = re.search(r'第(\d+)章', filename)
-        if not num_match:
-            continue
-
-        chapter_num = int(num_match.group(1))
-        if not (start_chapter <= chapter_num <= end_chapter):
-            continue
-
-        filepath = os.path.join(cache_dir, filename)
-        try:
-            with open(filepath, 'r', encoding='utf-8') as f:
-                lines = f.readlines()
-        except Exception:
-            continue
-
-        # 跳过元数据行（标题、URL、去水印、分隔线）
-        content_lines = []
-        skip_patterns = ['标题:', 'URL:', '去水印:', '==========']
-        for line in lines:
-            stripped = line.strip()
-            if any(stripped.startswith(p) for p in skip_patterns):
-                continue
-            if stripped == '':
-                continue
-            content_lines.append(stripped)
-
-        if not content_lines:
-            continue
-
-        chapter_title = content_lines[0]
-        chapter_content = '\n'.join(content_lines[1:]) if len(content_lines) > 1 else '\n'.join(content_lines)
-
-        chapters.append({
-            'chapter_num': chapter_num,
-            'title': chapter_title,
-            'content': chapter_content,
-            'url': source_url,
-            'watermark_removed': True,
-            'length': len(chapter_content)
-        })
-
-    chapters.sort(key=lambda x: x['chapter_num'])
-    return chapters
-
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def quick_crawl(request):
@@ -758,76 +682,58 @@ def quick_crawl(request):
 
         # 创建总任务
         task_id = f"quick_{uuid.uuid4().hex[:8]}"
-        use_local_fallback = False
         downloaded_chapters = []
         catalog_chapters_count = 0
 
-        try:
-            # 获取爬虫实例
-            current_dir = os.path.dirname(os.path.abspath(__file__))
-            project_root = os.path.dirname(os.path.dirname(current_dir))
-            sys.path.insert(0, project_root)
+        # 获取爬虫实例
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(os.path.dirname(current_dir))
+        sys.path.insert(0, project_root)
 
-            from integrated_hetushu_crawler import IntegratedHetuShuCrawler
-            crawler = IntegratedHetuShuCrawler()
+        from integrated_hetushu_crawler import IntegratedHetuShuCrawler
+        crawler = IntegratedHetuShuCrawler()
 
-            # 步骤1: 提取目录
-            print(f"🔍 步骤1: 提取目录 - {source_url}")
-            catalog_data = crawler.extract_catalog(source_url)
+        # 步骤1: 提取目录
+        print(f"🔍 步骤1: 提取目录 - {source_url}")
+        catalog_data = crawler.extract_catalog(source_url)
 
-            if not catalog_data:
-                raise Exception('无法提取目录信息')
+        if not catalog_data:
+            raise Exception('无法提取目录信息')
 
-            catalog_chapters_count = len(catalog_data.get('chapters', []))
+        catalog_chapters_count = len(catalog_data.get('chapters', []))
 
-            # 步骤2: 下载章节
-            print(f"📖 步骤2: 下载章节 {start_chapter}-{end_chapter}")
-            chapters = catalog_data.get('chapters', [])
-            target_chapters = []
-            for ch in chapters:
-                try:
-                    chapter_num = int(ch.get('chapter_num', 0))
-                    if start_chapter <= chapter_num <= end_chapter:
-                        target_chapters.append(ch)
-                except (ValueError, TypeError):
-                    continue
+        # 步骤2: 下载章节
+        print(f"📖 步骤2: 下载章节 {start_chapter}-{end_chapter}")
+        chapters = catalog_data.get('chapters', [])
+        target_chapters = []
+        for ch in chapters:
+            try:
+                chapter_num = int(ch.get('chapter_num', 0))
+                if start_chapter <= chapter_num <= end_chapter:
+                    target_chapters.append(ch)
+            except (ValueError, TypeError):
+                continue
 
-            if not target_chapters:
-                raise Exception('没有找到指定范围的章节')
+        if not target_chapters:
+            raise Exception('没有找到指定范围的章节')
 
-            for chapter_info in target_chapters:
-                result = crawler.download_chapter(
-                    chapter_info.get('url'),
-                    chapter_info.get('title'),
-                    remove_watermark=remove_watermark
-                )
-                if result:
-                    downloaded_chapters.append(result)
-
-        except Exception as crawl_error:
-            # Demo fallback：在线爬取失败时尝试本地缓存
-            logger.warning(f"在线爬取失败，尝试本地缓存 fallback: {crawl_error}")
-            local_chapters = _get_local_demo_chapters(source_url, start_chapter, end_chapter)
-            if local_chapters:
-                downloaded_chapters = local_chapters
-                use_local_fallback = True
-                catalog_chapters_count = len(local_chapters)
-            else:
-                return Response({
-                    'success': False,
-                    'task_id': task_id,
-                    'error': f'快速爬取失败: {str(crawl_error)}'
-                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        for chapter_info in target_chapters:
+            result = crawler.download_chapter(
+                chapter_info.get('url'),
+                chapter_info.get('title'),
+                remove_watermark=remove_watermark
+            )
+            if result:
+                downloaded_chapters.append(result)
 
         # 步骤3: 导入数据库
         print(f"💾 步骤3: 导入数据库")
         with transaction.atomic():
-            fallback_title = novel_title or ('国医高手（Demo 本地示例）' if use_local_fallback else '未知小说')
             novel, created = Novel.objects.get_or_create(
-                title=fallback_title,
+                title=novel_title or '未知小说',
                 defaults={
                     'author': novel_author or '未知作者',
-                    'description': f'从 {source_url} {"[Demo 本地示例]" if use_local_fallback else "快速导入"}',
+                    'description': f'从 {source_url} 快速导入',
                     'status': 'published',
                     'is_active': True
                 }
@@ -851,15 +757,13 @@ def quick_crawl(request):
                     'end_chapter': end_chapter,
                     'remove_watermark': remove_watermark,
                     'novel_title': novel_title,
-                    'novel_author': novel_author,
-                    'use_local_fallback': use_local_fallback
+                    'novel_author': novel_author
                 },
                 result_data={
                     'novel_id': novel.id,
-                    'catalog_extracted': not use_local_fallback,
+                    'catalog_extracted': True,
                     'chapters_downloaded': len(downloaded_chapters),
-                    'chapters_imported': 0,
-                    'use_local_fallback': use_local_fallback
+                    'chapters_imported': 0
                 }
             )
 
@@ -893,8 +797,6 @@ def quick_crawl(request):
             task.save()
 
             message = f'快速导入完成！小说《{novel.title}》共处理 {len(downloaded_chapters)} 章，新增 {imported_count} 章'
-            if use_local_fallback:
-                message += '（当前和图书有 Cloudflare 保护，已使用 Demo 本地示例数据）'
 
             return Response({
                 'success': True,
@@ -906,7 +808,6 @@ def quick_crawl(request):
                 'downloaded_chapters': len(downloaded_chapters),
                 'imported_chapters': imported_count,
                 'watermark_removed': remove_watermark,
-                'use_local_fallback': use_local_fallback,
                 'message': message
             })
 
