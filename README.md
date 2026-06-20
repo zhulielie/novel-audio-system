@@ -1,21 +1,27 @@
-# 智能小说管理系统
+# Novel Audio System / 智能小说有声书系统
 
-> 一个端到端的小说爬取、管理与 TTS 有声书生成系统。粘贴小说 URL → 自动下载章节 → 生成 MP3 有声书。
+一个端到端的小说爬取、管理与 TTS 有声书生成系统。粘贴小说目录 URL，即可自动提取目录、下载章节并生成有声书音频。
+
+> **声明**：本项目仅提供本地自动化工具能力，代码本身不包含任何小说正文或音频。用户必须确保仅对自己拥有版权、已获授权或处于公共领域的内容使用本工具。
 
 ## 功能特性
 
-- **智能爬虫**：粘贴和图书等小说目录 URL，自动解析并下载章节
-- **小说管理**：小说列表、章节管理、在线阅读器
-- **TTS 合成**：基于 Microsoft Edge TTS，一键生成有声书 MP3
-- **工作流编排**：从 URL 到 MP3 的完整 pipeline
-- **本地 Fallback**：和图书在线爬取被 Cloudflare 拦截时，自动使用本地示例数据完成演示
+- **智能目录提取**：粘贴小说目录页 URL，自动解析章节列表
+- **Cloudflare / 反爬绕过**：当自动爬取被拦截时，可调用 Kimi WebBridge 在真实浏览器中完成验证并直接读取 DOM
+- **章节下载与入库**：解析正文、去水印后写入数据库
+- **TTS 有声书合成**：基于 Microsoft Edge TTS / GPT-SoVITS / CosyVoice 等引擎生成音频
+- **Web 管理后台**：Django REST Framework + Vue 3 前后端分离，支持小说列表、章节管理、任务队列
+- **异步任务队列**：django-q2 处理下载与合成任务
 
 ## 技术栈
 
-- 后端：Django 5.2.5 + Django REST Framework + django-q2 + SQLite
-- 前端：Vue 3 + Vite + TypeScript + Element Plus
-- TTS：Microsoft Edge TTS（在线，无需 GPU / 本地音色资源）
-- 爬虫：cloudscraper + 本地文本解析 fallback
+| 层级 | 技术 |
+|------|------|
+| 后端 | Django 5.2.5 + Django REST Framework + django-q2 + SQLite |
+| 前端 | Vue 3 + Vite + TypeScript + Element Plus |
+| 爬虫 | cloudscraper + BeautifulSoup + Kimi WebBridge（可选） |
+| TTS | Microsoft Edge TTS / GPT-SoVITS / CosyVoice / F5-TTS 等 |
+| 任务队列 | django-q2 |
 
 ## 快速启动
 
@@ -23,125 +29,102 @@
 
 - Python 3.13+
 - Node.js 20+
-- Windows（当前脚本为 PowerShell 风格）
+- Windows / Linux / macOS（开发主要在 Windows 上验证）
 
-### 一键启动（推荐）
-
-Windows 用户直接双击运行项目根目录的启动脚本：
+### 1. 后端
 
 ```powershell
-# PowerShell
-.\start-demo.ps1
+# 进入后端目录
+cd backend
 
-# 或双击
-start-demo.bat
+# 创建并激活虚拟环境（推荐）
+python -m venv .venv
+.\.venv\Scripts\activate
+
+# 安装依赖
+pip install -r requirements.txt
+
+# 数据库迁移
+python manage.py migrate
+
+# 创建管理员（可选）
+python manage.py createsuperuser
+
+# 启动 Django 开发服务器
+python manage.py runserver 0.0.0.0:8000
+
+# 另起一个终端启动任务队列
+python manage.py qcluster
 ```
 
-脚本会自动打开 3 个终端窗口并启动后端、任务队列和前端。若默认端口 5176 被占用，前端会自动递增到可用端口。
-
-### 手动启动
-
-```powershell
-# 终端 1：Django 后端（端口 8000）
-cd backend
-.venv\Scripts\python.exe manage.py runserver 0.0.0.0:8000
-
-# 终端 2：django-q2 任务队列
-cd backend
-.venv\Scripts\python.exe manage.py qcluster
-
-# 终端 3：Vue 前端（端口 5176）
-cd frontend
-npx vite --port 5176
-```
-
-打开浏览器访问控制台打印的地址（通常是 http://localhost:5176）。
-
-### 生产构建
+### 2. 前端
 
 ```powershell
 cd frontend
+
+npm install
+
+# 开发模式
+npm run dev
+
+# 生产构建
 npm run build
 ```
 
-构建产物位于 `frontend/dist/`。
+### 3. 浏览器桥接（可选，用于绕过 Cloudflare）
 
-## 体验流程
+安装并启动 [Kimi WebBridge](https://kimi-webbridge._example.com)（端口默认 `10086`）后，系统会在目录提取失败时自动提示在真实浏览器中完成验证。
 
-1. 打开前端地址，使用默认账号登录：
-   - 用户名：`admin`
-   - 密码：`admin123456`
-2. 进入 **爬虫管理 → 智能爬虫**
-3. 粘贴示例 URL：
-   ```
-   https://www.hetushu.com/book/1311/index.html
-   ```
-4. 选择要下载的章节范围（建议 1-3 章），点击 **导入并生成有声书**
-5. 若和图书被 Cloudflare 拦截，会弹出确认框，点击 **确定导入** 使用本地示例数据继续体验
-6. 导入成功后，点击 **下一步：生成 MP3 有声书**
-7. 在 TTS 页面选择小说/章节，点击 **快速合成**
-8. 等待任务完成，即可下载 MP3 音频
+## 使用流程
 
-> 若和图书返回 403，系统会自动 fallback 到本地《国医高手》示例数据，确保演示可完整跑通。
+1. 打开前端页面 `http://localhost:5178`
+2. 粘贴小说目录页 URL，点击「提取目录」
+3. 若站点启用 Cloudflare 验证，按弹窗提示在浏览器中完成验证
+4. 选择章节范围，点击「下载章节」
+5. 在 TTS 页面选择章节，点击「生成有声书」
+6. 任务完成后下载音频文件
 
 ## 项目结构
 
 ```
 .
-├── backend/          # Django 后端
-│   ├── novels/       # 小说与章节 API
-│   ├── tts/          # TTS 合成模块
-│   └── ...
-└── frontend/         # Vue3 前端
-    ├── src/views/    # 页面
-    └── dist/         # 构建产物
+├── backend/                 # Django 后端
+│   ├── novels/              # 小说、章节、爬虫 API
+│   ├── tts/                 # TTS 任务与合成服务
+│   ├── crawlers/            # 爬虫实现
+│   ├── generators/          # 音频生成器
+│   ├── llms/                # LLM 相关模块
+│   └── novel_audio_system/  # Django 配置
+├── frontend/                # Vue 3 前端
+│   └── src/
+│       ├── views/           # 页面组件
+│       └── layout/          # 布局组件
+└── README.md
 ```
-
-## 默认账号
-
-- 管理员：`admin` / `admin123456`
-
-## 端到端验证
-
-项目根目录提供 `e2e_verify.py`，可自动跑通完整链路并生成截图：
-
-**登录 → 爬虫导入 → 小说列表 → 在线阅读 → TTS 快速合成 → 任务完成 → 音频下载**
-
-```powershell
-cd backend
-.venv\Scripts\python.exe ..\e2e_verify.py
-```
-
-> 运行前请确保 playwright 和 requests 已安装在后端虚拟环境中。
 
 ## 测试
 
-### 后端 API 测试（pytest）
-
 ```powershell
-cd backend
-.venv\Scripts\python.exe -m pytest
-```
-
-覆盖：认证登录、小说/章节 CRUD、TTS 任务创建等。
-
-### 前端单元测试（vitest）
-
-```powershell
+# 前端测试
 cd frontend
 npm run test
+
+# 后端测试
+cd backend
+pytest
 ```
 
-已包含 Pinia store 等核心逻辑测试。
+## 免责声明
 
-### 端到端测试
+本工具仅供学习研究和个人非商业用途。使用者应自行确保：
 
-见上文 `e2e_verify.py`。
+- 仅抓取自己拥有版权或已获授权的内容；
+- 仅抓取公共领域作品；
+- 遵守目标网站的 `robots.txt` 和服务条款；
+- 不将本工具用于大规模爬取、二次分发或任何侵权行为。
 
-## 已知限制
-
-- 和图书（hetushu.com）当前有 Cloudflare 防护，在线爬取可能 403，Demo 已用本地数据兜底
+开发者不对用户因使用本工具抓取、生成、传播第三方内容而产生的任何法律后果负责。
 
 ## 许可证
 
-MIT
+本项目代码采用 [Apache License 2.0](LICENSE) 开源。小说内容、生成的音频以及第三方模型权重均不属于本仓库授权范围。
