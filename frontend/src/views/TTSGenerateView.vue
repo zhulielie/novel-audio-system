@@ -344,7 +344,7 @@ onMounted(async () => {
           selectedChapter.value = list[0].id
           unwatch()
         }
-      })
+      }, { immediate: true })
     }
   }
 })
