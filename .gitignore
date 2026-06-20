@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
-.Python
+*.Python
 build/
 develop-eggs/
 dist/
@@ -82,3 +82,9 @@ Audacity/
 extracted_code/
 story/
 tts_benchmark/
+
+# User-generated downloaded novel content / debug outputs
+hetushu_*/
+hetushu_*_catalog.json
+hetushu_second.html
+mcp_demo_*/
