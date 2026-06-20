@@ -41,6 +41,7 @@ urlpatterns = [
     path('audios/', include('audios.urls')),
     path('llms/', include('llms.urls')),
     path('generators/', include('generators.urls')),
+    path('tts/', include('tts.urls')),
 ]
 
 # 开发环境下提供媒体文件服务

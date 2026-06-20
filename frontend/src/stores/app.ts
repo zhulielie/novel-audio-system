@@ -101,6 +101,6 @@ export const useAppStore = defineStore('app', () => {
   }
 })
 
-// 初始化设置
-const appStore = useAppStore()
-appStore.initSettings()
+// 初始化设置 - 需要在Vue app初始化后调用
+// const appStore = useAppStore()
+// appStore.initSettings()

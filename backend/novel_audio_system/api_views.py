@@ -183,30 +183,29 @@ def check_email_view(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def dashboard_stats_view(request):
     """获取仪表板统计信息"""
     from novels.models import Novel, Chapter
-    from audios.models import AudioProject
-    from generators.models import Workflow, Task
-    
+    from tts.models import TTSGenerationTask
+
     # 统计数据
     novels_count = Novel.objects.count()
     chapters_count = Chapter.objects.count()
-    audio_projects_count = AudioProject.objects.count()
-    workflows_count = Workflow.objects.count()
-    
+    tts_tasks_count = TTSGenerationTask.objects.count()
+    completed_audios_count = TTSGenerationTask.objects.filter(status='completed').count()
+
     # 最近活动
     recent_novels = Novel.objects.order_by('-created_at')[:5]
     recent_chapters = Chapter.objects.order_by('-created_at')[:5]
-    recent_tasks = Task.objects.order_by('-created_at')[:5]
-    
+    recent_tasks = TTSGenerationTask.objects.order_by('-created_at')[:5]
+
     return Response({
         'stats': {
             'novels': novels_count,
             'chapters': chapters_count,
-            'audio_projects': audio_projects_count,
-            'workflows': workflows_count
+            'tts_tasks': tts_tasks_count,
+            'completed_audios': completed_audios_count
         },
         'recent_activity': {
             'novels': [{

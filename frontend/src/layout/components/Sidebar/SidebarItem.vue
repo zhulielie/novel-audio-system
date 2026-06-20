@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { isExternal } from '@/utils/validate'
 import Item from './Item.vue'
 import AppLink from './Link.vue'
@@ -48,18 +48,15 @@ const hasOneShowingChild = (children: any[] = [], parent: any) => {
     if (item.hidden) {
       return false
     } else {
-      // Temp set(will be used if only has one showing child)
       onlyOneChild.value = item
       return true
     }
   })
 
-  // When there is only one child router, the child router is displayed by default
   if (showingChildren.length === 1) {
     return true
   }
 
-  // Show parent if there are no child router to display
   if (showingChildren.length === 0) {
     onlyOneChild.value = { ...parent, path: '', noShowingChildren: true }
     return true
@@ -78,7 +75,6 @@ const resolvePath = (routePath: string) => {
   return path.resolve(props.basePath, routePath)
 }
 
-// 简单的路径解析函数
 const path = {
   resolve: (basePath: string, relativePath: string) => {
     if (relativePath.startsWith('/')) {
@@ -94,10 +90,47 @@ const path = {
 <style lang="scss" scoped>
 .nest-menu .el-submenu > .el-submenu__title,
 .el-submenu .el-menu-item {
-  background-color: #1f2d3d !important;
+  background-color: var(--bg-sidebar) !important;
 
   &:hover {
-    background-color: #263445 !important;
+    background-color: var(--primary-50) !important;
   }
+}
+
+:deep(.el-menu-item) {
+  border-radius: var(--radius-md);
+  margin: 4px 10px;
+  height: 44px;
+  line-height: 44px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: var(--primary-50) !important;
+    color: var(--primary-600) !important;
+  }
+
+  &.is-active {
+    background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  }
+}
+
+:deep(.el-sub-menu__title) {
+  border-radius: var(--radius-md);
+  margin: 4px 10px;
+  height: 44px;
+  line-height: 44px;
+  font-weight: 500;
+
+  &:hover {
+    background-color: var(--primary-50) !important;
+    color: var(--primary-600) !important;
+  }
+}
+
+:deep(.el-sub-menu.is-active > .el-sub-menu__title) {
+  color: var(--primary-600) !important;
 }
 </style>

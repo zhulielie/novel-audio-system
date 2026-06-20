@@ -3,7 +3,9 @@
     <!-- 侧边栏 -->
     <el-aside :width="sidebarWidth" class="sidebar-container">
       <div class="logo-container">
-        <img src="/logo.svg" alt="Logo" class="logo" />
+        <div class="logo">
+          <el-icon size="20" color="#ffffff"><Reading /></el-icon>
+        </div>
         <h2 v-show="!isCollapse" class="logo-title">小说管理系统</h2>
       </div>
       
@@ -14,9 +16,9 @@
           :unique-opened="false"
           :collapse-transition="false"
           mode="vertical"
-          background-color="#304156"
-          text-color="#bfcbd9"
-          active-text-color="#409EFF"
+          background-color="#ffffff"
+          text-color="#475569"
+          active-text-color="#6366f1"
           router
         >
           <sidebar-item
@@ -100,7 +102,7 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { CaretBottom } from '@element-plus/icons-vue'
+import { CaretBottom, Reading } from '@element-plus/icons-vue'
 import { useAppStore } from '@/stores/app'
 import { useUserStore } from '@/stores/user'
 import { usePermissionStore } from '@/stores/permission'
@@ -180,34 +182,43 @@ watch(
 .admin-layout {
   height: 100vh;
   display: flex;
+  background: var(--bg-body);
 }
 
 .sidebar-container {
-  background-color: #304156;
-  transition: width 0.28s;
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-color);
+  transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  z-index: 10;
   
   .logo-container {
     display: flex;
     align-items: center;
-    padding: 20px;
-    background-color: #2b2f3a;
+    padding: 18px 20px;
+    height: 64px;
+    border-bottom: 1px solid var(--border-color);
     
     .logo {
       width: 32px;
       height: 32px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%);
+      padding: 6px;
     }
     
     .logo-title {
       margin-left: 12px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-primary);
       white-space: nowrap;
+      letter-spacing: -0.02em;
     }
   }
   
   .sidebar-scrollbar {
-    height: calc(100vh - 72px);
+    height: calc(100vh - 64px);
   }
 }
 
@@ -219,88 +230,108 @@ watch(
 }
 
 .navbar {
-  height: 50px;
+  height: 64px;
   overflow: hidden;
   position: relative;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+  background: var(--bg-navbar);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 24px;
   
   .navbar-left {
     display: flex;
     align-items: center;
+    gap: 16px;
     
     .hamburger-container {
-      line-height: 46px;
-      height: 100%;
-      float: left;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--radius-md);
       cursor: pointer;
-      transition: background 0.3s;
+      transition: all 0.2s ease;
       -webkit-tap-highlight-color: transparent;
+      color: var(--text-secondary);
       
       &:hover {
-        background: rgba(0, 0, 0, 0.025);
+        background: var(--slate-100);
+        color: var(--primary-600);
       }
     }
     
     .breadcrumb-container {
-      margin-left: 16px;
+      font-size: 14px;
     }
   }
   
   .navbar-right {
     display: flex;
     align-items: center;
+    gap: 8px;
     
     .right-menu-item {
-      display: inline-block;
-      padding: 0 8px;
-      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
       font-size: 18px;
-      color: #5a5e66;
-      vertical-align: text-bottom;
+      color: var(--text-secondary);
+      border-radius: var(--radius-md);
+      transition: all 0.2s ease;
       
       &.hover-effect {
         cursor: pointer;
-        transition: background 0.3s;
         
         &:hover {
-          background: rgba(0, 0, 0, 0.025);
+          background: var(--slate-100);
+          color: var(--primary-600);
         }
       }
     }
     
     .avatar-container {
-      margin-right: 30px;
+      margin-left: 8px;
       
       .avatar-wrapper {
-        margin-top: 5px;
         position: relative;
         display: flex;
         align-items: center;
+        gap: 10px;
+        padding: 6px 12px 6px 6px;
+        border-radius: var(--radius-full);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+        
+        &:hover {
+          background: var(--slate-100);
+          border-color: var(--border-color);
+        }
         
         .user-avatar {
-          cursor: pointer;
           width: 32px;
           height: 32px;
           border-radius: 50%;
+          object-fit: cover;
+          border: 2px solid var(--bg-card);
+          box-shadow: var(--shadow-xs);
         }
         
         .user-name {
-          margin-left: 8px;
           font-size: 14px;
-          color: #606266;
+          font-weight: 500;
+          color: var(--text-secondary);
         }
         
         .el-icon-caret-bottom {
-          cursor: pointer;
-          position: absolute;
-          right: -20px;
-          top: 25px;
           font-size: 12px;
+          color: var(--text-muted);
         }
       }
     }
@@ -308,27 +339,28 @@ watch(
 }
 
 .app-main {
-  min-height: calc(100vh - 50px);
+  min-height: calc(100vh - 64px);
   width: 100%;
   position: relative;
-  overflow: hidden;
-  padding: 20px;
-  background-color: #f0f2f5;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px;
+  background: var(--bg-body);
 }
 
 // 过渡动画
 .fade-transform-leave-active,
 .fade-transform-enter-active {
-  transition: all 0.5s;
+  transition: all 0.3s ease;
 }
 
 .fade-transform-enter-from {
   opacity: 0;
-  transform: translateX(-30px);
+  transform: translateX(-12px);
 }
 
 .fade-transform-leave-to {
   opacity: 0;
-  transform: translateX(30px);
+  transform: translateX(12px);
 }
 </style>

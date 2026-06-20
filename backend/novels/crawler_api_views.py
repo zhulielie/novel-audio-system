@@ -527,6 +527,82 @@ class CrawlerAPIViewSet(viewsets.ViewSet):
         })
 
 
+def _get_local_demo_chapters(source_url, start_chapter, end_chapter):
+    """Demo 本地缓存 fallback：当和图书在线爬取被 Cloudflare 拦截时使用"""
+    import re
+    from pathlib import Path
+
+    # book_id -> 本地缓存目录映射
+    cache_map = {
+        '1311': 'hetushu_国医高手_第1-5章_去水印版',
+    }
+
+    book_id_match = re.search(r'/book/(\d+)/', source_url)
+    if not book_id_match:
+        return None
+
+    book_id = book_id_match.group(1)
+    cache_dir_name = cache_map.get(book_id)
+    if not cache_dir_name:
+        return None
+
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(os.path.dirname(current_dir))
+    cache_dir = os.path.join(project_root, cache_dir_name)
+
+    if not os.path.isdir(cache_dir):
+        return None
+
+    chapters = []
+    for filename in sorted(os.listdir(cache_dir)):
+        if not filename.endswith('.txt') or '合并版' in filename:
+            continue
+
+        num_match = re.search(r'第(\d+)章', filename)
+        if not num_match:
+            continue
+
+        chapter_num = int(num_match.group(1))
+        if not (start_chapter <= chapter_num <= end_chapter):
+            continue
+
+        filepath = os.path.join(cache_dir, filename)
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+        except Exception:
+            continue
+
+        # 跳过元数据行（标题、URL、去水印、分隔线）
+        content_lines = []
+        skip_patterns = ['标题:', 'URL:', '去水印:', '==========']
+        for line in lines:
+            stripped = line.strip()
+            if any(stripped.startswith(p) for p in skip_patterns):
+                continue
+            if stripped == '':
+                continue
+            content_lines.append(stripped)
+
+        if not content_lines:
+            continue
+
+        chapter_title = content_lines[0]
+        chapter_content = '\n'.join(content_lines[1:]) if len(content_lines) > 1 else '\n'.join(content_lines)
+
+        chapters.append({
+            'chapter_num': chapter_num,
+            'title': chapter_title,
+            'content': chapter_content,
+            'url': source_url,
+            'watermark_removed': True,
+            'length': len(chapter_content)
+        })
+
+    chapters.sort(key=lambda x: x['chapter_num'])
+    return chapters
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def quick_crawl(request):
@@ -539,35 +615,37 @@ def quick_crawl(request):
         remove_watermark = request.data.get('remove_watermark', True)
         novel_title = request.data.get('novel_title', '')
         novel_author = request.data.get('novel_author', '')
-        
+
         if not source_url:
             return Response({
                 'success': False,
                 'error': '请提供源URL'
             }, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # 创建总任务
         task_id = f"quick_{uuid.uuid4().hex[:8]}"
-        
+        use_local_fallback = False
+        downloaded_chapters = []
+        catalog_chapters_count = 0
+
         try:
             # 获取爬虫实例
             current_dir = os.path.dirname(os.path.abspath(__file__))
             project_root = os.path.dirname(os.path.dirname(current_dir))
             sys.path.insert(0, project_root)
-            
+
             from integrated_hetushu_crawler import IntegratedHetuShuCrawler
             crawler = IntegratedHetuShuCrawler()
-            
+
             # 步骤1: 提取目录
             print(f"🔍 步骤1: 提取目录 - {source_url}")
             catalog_data = crawler.extract_catalog(source_url)
-            
+
             if not catalog_data:
-                return Response({
-                    'success': False,
-                    'error': '无法提取目录信息'
-                }, status=status.HTTP_400_BAD_REQUEST)
-            
+                raise Exception('无法提取目录信息')
+
+            catalog_chapters_count = len(catalog_data.get('chapters', []))
+
             # 步骤2: 下载章节
             print(f"📖 步骤2: 下载章节 {start_chapter}-{end_chapter}")
             chapters = catalog_data.get('chapters', [])
@@ -579,14 +657,10 @@ def quick_crawl(request):
                         target_chapters.append(ch)
                 except (ValueError, TypeError):
                     continue
-            
+
             if not target_chapters:
-                return Response({
-                    'success': False,
-                    'error': '没有找到指定范围的章节'
-                }, status=status.HTTP_400_BAD_REQUEST)
-            
-            downloaded_chapters = []
+                raise Exception('没有找到指定范围的章节')
+
             for chapter_info in target_chapters:
                 result = crawler.download_chapter(
                     chapter_info.get('url'),
@@ -595,98 +669,113 @@ def quick_crawl(request):
                 )
                 if result:
                     downloaded_chapters.append(result)
-            
-            # 步骤3: 导入数据库
-            print(f"💾 步骤3: 导入数据库")
-            with transaction.atomic():
-                # 创建或获取小说
-                novel, created = Novel.objects.get_or_create(
-                    title=novel_title or catalog_data.get('title', '未知小说'),
-                    defaults={
-                        'author': novel_author or catalog_data.get('author', '未知作者'),
-                        'description': f'从 {source_url} 快速导入',
-                        'status': 'published',
-                        'is_active': True
-                    }
-                )
-                
-                # 创建任务记录
-                task = CrawlerTask.objects.create(
-                    task_id=task_id,
-                    task_type='batch_import',
-                    novel=novel,
-                    source_url=source_url,
-                    status='completed',
-                    started_at=timezone.now(),
-                    completed_at=timezone.now(),
-                    total_items=len(downloaded_chapters),
-                    processed_items=len(downloaded_chapters),
-                    success_items=len(downloaded_chapters),
-                    progress=100,
-                    parameters={
-                        'start_chapter': start_chapter,
-                        'end_chapter': end_chapter,
-                        'remove_watermark': remove_watermark,
-                        'novel_title': novel_title,
-                        'novel_author': novel_author
-                    },
-                    result_data={
-                        'novel_id': novel.id,
-                        'catalog_extracted': True,
-                        'chapters_downloaded': len(downloaded_chapters),
-                        'chapters_imported': 0  # 将在下面更新
-                    }
-                )
-                
-                # 导入章节
-                imported_count = 0
-                for i, chapter_data in enumerate(downloaded_chapters):
-                    chapter_title = chapter_data.get('title', '')
-                    chapter_content = chapter_data.get('content', '')
-                    
-                    if chapter_title and chapter_content:
-                        # 检查章节是否已存在
-                        existing_chapter = Chapter.objects.filter(
-                            novel=novel,
-                            title=chapter_title
-                        ).first()
-                        
-                        if not existing_chapter:
-                            Chapter.objects.create(
-                                novel=novel,
-                                title=chapter_title,
-                                content=chapter_content,
-                                chapter_number=str(start_chapter + i),
-                                chapter_sort_number=start_chapter + i,
-                                word_count=len(chapter_content),
-                                is_published=True
-                            )
-                            imported_count += 1
-                
-                # 更新任务结果
-                task.result_data['chapters_imported'] = imported_count
-                task.save()
-                
+
+        except Exception as crawl_error:
+            # Demo fallback：在线爬取失败时尝试本地缓存
+            logger.warning(f"在线爬取失败，尝试本地缓存 fallback: {crawl_error}")
+            local_chapters = _get_local_demo_chapters(source_url, start_chapter, end_chapter)
+            if local_chapters:
+                downloaded_chapters = local_chapters
+                use_local_fallback = True
+                catalog_chapters_count = len(local_chapters)
+            else:
                 return Response({
-                    'success': True,
+                    'success': False,
                     'task_id': task_id,
+                    'error': f'快速爬取失败: {str(crawl_error)}'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # 步骤3: 导入数据库
+        print(f"💾 步骤3: 导入数据库")
+        with transaction.atomic():
+            fallback_title = novel_title or ('国医高手（Demo 本地示例）' if use_local_fallback else '未知小说')
+            novel, created = Novel.objects.get_or_create(
+                title=fallback_title,
+                defaults={
+                    'author': novel_author or '未知作者',
+                    'description': f'从 {source_url} {"[Demo 本地示例]" if use_local_fallback else "快速导入"}',
+                    'status': 'published',
+                    'is_active': True
+                }
+            )
+
+            # 创建任务记录
+            task = CrawlerTask.objects.create(
+                task_id=task_id,
+                task_type='batch_import',
+                novel=novel,
+                source_url=source_url,
+                status='completed',
+                started_at=timezone.now(),
+                completed_at=timezone.now(),
+                total_items=len(downloaded_chapters),
+                processed_items=len(downloaded_chapters),
+                success_items=len(downloaded_chapters),
+                progress=100,
+                parameters={
+                    'start_chapter': start_chapter,
+                    'end_chapter': end_chapter,
+                    'remove_watermark': remove_watermark,
+                    'novel_title': novel_title,
+                    'novel_author': novel_author,
+                    'use_local_fallback': use_local_fallback
+                },
+                result_data={
                     'novel_id': novel.id,
-                    'novel_title': novel.title,
-                    'novel_author': novel.author,
-                    'catalog_chapters': len(catalog_data.get('chapters', [])),
-                    'downloaded_chapters': len(downloaded_chapters),
-                    'imported_chapters': imported_count,
-                    'watermark_removed': remove_watermark,
-                    'message': f'快速导入完成！小说《{novel.title}》已成功导入 {imported_count} 章'
-                })
-                
-        except Exception as e:
+                    'catalog_extracted': not use_local_fallback,
+                    'chapters_downloaded': len(downloaded_chapters),
+                    'chapters_imported': 0,
+                    'use_local_fallback': use_local_fallback
+                }
+            )
+
+            # 导入章节
+            imported_count = 0
+            for i, chapter_data in enumerate(downloaded_chapters):
+                chapter_title = chapter_data.get('title', '')
+                chapter_content = chapter_data.get('content', '')
+
+                if chapter_title and chapter_content:
+                    # 检查章节是否已存在
+                    existing_chapter = Chapter.objects.filter(
+                        novel=novel,
+                        title=chapter_title
+                    ).first()
+
+                    if not existing_chapter:
+                        Chapter.objects.create(
+                            novel=novel,
+                            title=chapter_title,
+                            content=chapter_content,
+                            chapter_number=str(chapter_data.get('chapter_num', start_chapter + i)),
+                            chapter_sort_number=chapter_data.get('chapter_num', start_chapter + i),
+                            word_count=len(chapter_content),
+                            is_published=True
+                        )
+                        imported_count += 1
+
+            # 更新任务结果
+            task.result_data['chapters_imported'] = imported_count
+            task.save()
+
+            message = f'快速导入完成！小说《{novel.title}》已成功导入 {imported_count} 章'
+            if use_local_fallback:
+                message += '（当前和图书有 Cloudflare 保护，已使用 Demo 本地示例数据）'
+
             return Response({
-                'success': False,
+                'success': True,
                 'task_id': task_id,
-                'error': f'快速爬取失败: {str(e)}'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
+                'novel_id': novel.id,
+                'novel_title': novel.title,
+                'novel_author': novel.author,
+                'catalog_chapters': catalog_chapters_count,
+                'downloaded_chapters': len(downloaded_chapters),
+                'imported_chapters': imported_count,
+                'watermark_removed': remove_watermark,
+                'use_local_fallback': use_local_fallback,
+                'message': message
+            })
+
     except Exception as e:
         return Response({
             'success': False,

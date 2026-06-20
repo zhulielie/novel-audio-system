@@ -39,7 +39,7 @@ export const constantRoutes: RouteRecordRaw[] = [
       {
         path: 'dashboard',
         name: 'Dashboard',
-        component: () => import('@/views/dashboard/index.vue'),
+        component: () => import('@/views/HomeView.vue'),
         meta: { title: '首页', icon: 'House', affix: true }
       }
     ]
@@ -57,51 +57,40 @@ export const constantRoutes: RouteRecordRaw[] = [
       }
     ]
   },
-  // 暂时将所有异步路由添加到常量路由中
+  // Demo 聚焦：隐藏系统管理
+  // {
+  //   path: '/system',
+  //   component: () => import('@/layout/AdminLayout.vue'),
+  //   redirect: '/system/users',
+  //   name: 'System',
+  //   meta: {
+  //     title: '系统管理',
+  //     icon: 'Setting'
+  //   },
+  //   children: [
+  //     { path: 'users', name: 'SystemUsers', component: () => import('@/views/system/UsersView.vue'), meta: { title: '用户管理', icon: 'User' } },
+  //     { path: 'roles', name: 'SystemRoles', component: () => import('@/views/system/RolesView.vue'), meta: { title: '角色管理', icon: 'UserFilled' } },
+  //     { path: 'menus', name: 'SystemMenus', component: () => import('@/views/system/MenusView.vue'), meta: { title: '菜单管理', icon: 'Menu' } },
+  //     { path: 'departments', name: 'SystemDepartments', component: () => import('@/views/system/DepartmentsView.vue'), meta: { title: '部门管理', icon: 'OfficeBuilding' } }
+  //   ]
+  // },
   {
-    path: '/system',
+    path: '/crawler',
     component: () => import('@/layout/AdminLayout.vue'),
-    redirect: '/system/users',
-    name: 'System',
+    redirect: '/crawler/integrated',
+    name: 'Crawler',
     meta: {
-      title: '系统管理',
-      icon: 'Setting'
+      title: '爬虫管理',
+      icon: 'Connection'
     },
     children: [
       {
-        path: 'users',
-        name: 'SystemUsers',
-        component: () => import('@/views/system/UsersView.vue'),
+        path: 'integrated',
+        name: 'CrawlerIntegrated',
+        component: () => import('@/views/IntegratedCrawlerView.vue'),
         meta: {
-          title: '用户管理',
-          icon: 'User'
-        }
-      },
-      {
-        path: 'roles',
-        name: 'SystemRoles',
-        component: () => import('@/views/system/RolesView.vue'),
-        meta: {
-          title: '角色管理',
-          icon: 'UserFilled'
-        }
-      },
-      {
-        path: 'menus',
-        name: 'SystemMenus',
-        component: () => import('@/views/system/MenusView.vue'),
-        meta: {
-          title: '菜单管理',
-          icon: 'Menu'
-        }
-      },
-      {
-        path: 'departments',
-        name: 'SystemDepartments',
-        component: () => import('@/views/system/DepartmentsView.vue'),
-        meta: {
-          title: '部门管理',
-          icon: 'OfficeBuilding'
+          title: '智能爬虫',
+          icon: 'MagicStick'
         }
       }
     ]
@@ -134,13 +123,63 @@ export const constantRoutes: RouteRecordRaw[] = [
           icon: 'Document'
         }
       },
+      // Demo 聚焦：隐藏来源管理
+      // {
+      //   path: 'sources',
+      //   name: 'NovelsSources',
+      //   component: () => import('@/views/NovelSourcesView.vue'),
+      //   meta: {
+      //     title: '来源管理',
+      //     icon: 'Link'
+      //   }
+      // }
+    ]
+  },
+  {
+    path: '/tts',
+    component: () => import('@/layout/AdminLayout.vue'),
+    redirect: '/tts/playground',
+    name: 'TTS',
+    meta: {
+      title: '语音合成',
+      icon: 'Microphone'
+    },
+    children: [
+      // Demo 聚焦：隐藏 VoxCPM 调参
+      // {
+      //   path: 'playground',
+      //   name: 'TTSPlayground',
+      //   component: () => import('@/views/TTSVoxCPMPlayground.vue'),
+      //   meta: {
+      //     title: 'VoxCPM 调参',
+      //     icon: 'SetUp'
+      //   }
+      // },
       {
-        path: 'sources',
-        name: 'NovelsSources',
-        component: () => import('@/views/NovelSourcesView.vue'),
+        path: 'synthesize',
+        name: 'TTSSynthesize',
+        component: () => import('@/views/TTSGenerateView.vue'),
         meta: {
-          title: '来源管理',
-          icon: 'Link'
+          title: 'TTS 合成',
+          icon: 'Microphone'
+        }
+      },
+      {
+        path: 'voices',
+        name: 'TTSVoices',
+        component: () => import('@/views/TTSVoicesView.vue'),
+        meta: {
+          title: '语音资源',
+          icon: 'Collection'
+        }
+      },
+      {
+        path: 'engines',
+        name: 'TTSEngines',
+        component: () => import('@/views/TTSEnginesView.vue'),
+        meta: {
+          title: '引擎配置',
+          icon: 'SetUp'
         }
       }
     ]
@@ -342,6 +381,54 @@ export const asyncRoutes: RouteRecordRaw[] = [
         meta: {
           title: '项目详情',
           hidden: true
+        }
+      }
+    ]
+  },
+  {
+    path: '/tts',
+    component: () => import('@/layout/AdminLayout.vue'),
+    redirect: '/tts/synthesize',
+    name: 'TTS',
+    meta: {
+      title: '语音合成',
+      icon: 'Microphone'
+    },
+    children: [
+      {
+        path: 'synthesize',
+        name: 'TTSSynthesize',
+        component: () => import('@/views/TTSGenerateView.vue'),
+        meta: {
+          title: 'TTS 合成',
+          icon: 'Microphone'
+        }
+      },
+      {
+        path: 'voices',
+        name: 'TTSVoices',
+        component: () => import('@/views/TTSVoicesView.vue'),
+        meta: {
+          title: '语音资源',
+          icon: 'Collection'
+        }
+      },
+      {
+        path: 'engines',
+        name: 'TTSEngines',
+        component: () => import('@/views/TTSEnginesView.vue'),
+        meta: {
+          title: '引擎配置',
+          icon: 'SetUp'
+        }
+      },
+      {
+        path: 'playground',
+        name: 'TTSPlayground',
+        component: () => import('@/views/TTSVoxCPMPlayground.vue'),
+        meta: {
+          title: 'VoxCPM 调参',
+          icon: 'SetUp'
         }
       }
     ]

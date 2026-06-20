@@ -1,7 +1,7 @@
 <template>
   <div class="quick-actions-section">
     <div class="section-header">
-      <h2>🚀 快速操作</h2>
+      <h2>快速操作</h2>
       <p>选择您需要的功能，一键直达</p>
     </div>
     
@@ -10,31 +10,28 @@
         class="action-card" 
         v-for="action in actions" 
         :key="action.key"
-        :class="action.type"
         @click="handleActionClick(action)"
       >
-        <div class="card-background">
-          <div class="card-content">
-            <div class="action-icon">{{ action.icon }}</div>
-            <h3 class="action-title">{{ action.title }}</h3>
-            <p class="action-description">{{ action.description }}</p>
-            
-            <div class="action-stats" v-if="action.stats">
-              <div class="stat-badge">
-                <span class="stat-value">{{ action.stats.value }}</span>
-                <span class="stat-label">{{ action.stats.label }}</span>
-              </div>
+        <div class="card-content">
+          <div class="action-header">
+            <div class="action-icon-wrapper" :class="action.type">
+              <el-icon size="24">
+                <component :is="action.icon" />
+              </el-icon>
             </div>
-            
-            <div class="action-button">
-              <span>立即使用</span>
-              <i class="arrow">→</i>
+            <div class="action-arrow">
+              <el-icon><ArrowRight /></el-icon>
             </div>
           </div>
           
-          <!-- 装饰性背景图案 -->
-          <div class="card-pattern">
-            <div class="pattern-dot" v-for="n in 12" :key="n"></div>
+          <div class="action-body">
+            <h3 class="action-title">{{ action.title }}</h3>
+            <p class="action-description">{{ action.description }}</p>
+          </div>
+          
+          <div class="action-footer" v-if="action.stats">
+            <span class="stat-value">{{ action.stats.value }}</span>
+            <span class="stat-label">{{ action.stats.label }}</span>
           </div>
         </div>
       </div>
@@ -43,28 +40,42 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { Connection, Reading, Headset, Lightning, ArrowRight } from '@element-plus/icons-vue'
+import { apiService } from '@/services/api'
 
 const router = useRouter()
 
-// 模拟统计数据（后面会从API获取）
 const statsData = ref({
-  totalNovels: 47,
-  audioProjects: 12,
-  pendingTasks: 3,
-  crawlerSuccessToday: 8
+  totalNovels: 0,
+  audioProjects: 0,
+  pendingTasks: 0,
+  crawlerSuccessToday: 0
 })
 
-// 快捷操作配置
+const fetchStats = async () => {
+  try {
+    const res = await apiService.get('/dashboard/stats/')
+    statsData.value.totalNovels = res.stats?.novels || 0
+    statsData.value.audioProjects = res.stats?.completed_audios || 0
+    statsData.value.pendingTasks = res.stats?.tts_tasks || 0
+    statsData.value.crawlerSuccessToday = 0
+  } catch (e) {
+    console.error('获取首页统计失败', e)
+  }
+}
+
+onMounted(fetchStats)
+
 const actions = computed(() => [
   {
     key: 'crawler',
     type: 'primary',
-    icon: '🕷️',
+    icon: 'Connection',
     title: '智能爬虫',
     description: '一键获取小说内容，支持多个网站',
-    route: '/integrated-crawler',
+    route: '/crawler/integrated',
     stats: {
       value: statsData.value.crawlerSuccessToday,
       label: '今日成功'
@@ -73,10 +84,10 @@ const actions = computed(() => [
   {
     key: 'novels',
     type: 'success',
-    icon: '📚',
+    icon: 'Reading',
     title: '小说管理',
     description: '浏览和管理您的小说库',
-    route: '/novels',
+    route: '/novels/list',
     stats: {
       value: statsData.value.totalNovels,
       label: '总计小说'
@@ -85,10 +96,10 @@ const actions = computed(() => [
   {
     key: 'audio',
     type: 'warning',
-    icon: '🎵',
+    icon: 'Headset',
     title: '音频生成',
     description: '将文字转换为高质量语音',
-    route: '/audio-projects',
+    route: '/tts/synthesize',
     stats: {
       value: statsData.value.audioProjects,
       label: '音频项目'
@@ -97,10 +108,10 @@ const actions = computed(() => [
   {
     key: 'batch',
     type: 'info',
-    icon: '⚡',
+    icon: 'Lightning',
     title: '批量导入',
     description: '快速批量处理小说数据',
-    route: '/batch-import',
+    route: '/crawler/batch',
     stats: {
       value: statsData.value.pendingTasks,
       label: '待处理'
@@ -108,7 +119,6 @@ const actions = computed(() => [
   }
 ])
 
-// 处理点击事件
 const handleActionClick = (action) => {
   if (action.route) {
     router.push(action.route)
@@ -118,243 +128,167 @@ const handleActionClick = (action) => {
 
 <style scoped>
 .quick-actions-section {
-  margin-bottom: 40px;
+  padding: 8px 24px 32px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .section-header {
-  text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 24px;
 }
 
 .section-header h2 {
-  font-size: 2rem;
-  font-weight: 600;
-  color: #2c3e50;
-  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
 }
 
 .section-header p {
-  font-size: 1rem;
-  color: #7f8c8d;
+  font-size: 14px;
+  color: var(--text-muted);
   margin: 0;
 }
 
 .actions-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-  max-width: 1200px;
-  margin: 0 auto;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
 }
 
 .action-card {
   cursor: pointer;
-  border-radius: 16px;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  height: 200px;
+  overflow: hidden;
 }
 
 .action-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-200);
 }
 
-.card-background {
-  position: relative;
-  height: 100%;
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  overflow: hidden;
-}
-
-/* 不同类型的卡片颜色 */
-.action-card.primary .card-background {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.action-card.success .card-background {
-  background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
-  color: white;
-}
-
-.action-card.warning .card-background {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: white;
-}
-
-.action-card.info .card-background {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: white;
+.action-card:hover .action-arrow {
+  background: var(--primary-50);
+  color: var(--primary-600);
+  transform: translateX(2px);
 }
 
 .card-content {
-  position: relative;
-  z-index: 2;
-  height: 100%;
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
-.action-icon {
-  font-size: 3rem;
-  margin-bottom: 12px;
-  display: block;
+.action-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
 }
 
-.action-title {
-  font-size: 1.4rem;
-  font-weight: 600;
-  margin: 0 0 8px 0;
+.action-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.action-description {
-  font-size: 0.9rem;
-  margin: 0 0 16px 0;
-  opacity: 0.9;
-  line-height: 1.4;
+.action-icon-wrapper.primary {
+  background: var(--primary-50);
+  color: var(--primary-600);
+}
+
+.action-icon-wrapper.success {
+  background: var(--success-50);
+  color: var(--success-600);
+}
+
+.action-icon-wrapper.warning {
+  background: var(--warning-50);
+  color: var(--warning-600);
+}
+
+.action-icon-wrapper.info {
+  background: var(--info-50);
+  color: var(--info-600);
+}
+
+.action-arrow {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.action-body {
   flex: 1;
-}
-
-.action-stats {
   margin-bottom: 16px;
 }
 
-.stat-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 6px 12px;
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+.action-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 6px 0;
+}
+
+.action-description {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.action-footer {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color-light);
 }
 
 .stat-value {
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
 }
 
 .stat-label {
-  font-size: 0.8rem;
-  opacity: 0.8;
-}
-
-.action-button {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 12px 16px;
-  border-radius: 12px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  transition: all 0.3s ease;
-}
-
-.action-card:hover .action-button {
-  background: rgba(255, 255, 255, 0.3);
-  transform: translateX(4px);
-}
-
-.action-button span {
+  font-size: 12px;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
-.action-button .arrow {
-  font-size: 1.2rem;
-  transition: transform 0.3s ease;
+@media (max-width: 1200px) {
+  .actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.action-card:hover .arrow {
-  transform: translateX(4px);
-}
-
-/* 装饰性背景图案 */
-.card-pattern {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 100px;
-  height: 100px;
-  opacity: 0.1;
-  z-index: 1;
-}
-
-.pattern-dot {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: white;
-  border-radius: 50%;
-}
-
-.pattern-dot:nth-child(1) { top: 10px; right: 10px; }
-.pattern-dot:nth-child(2) { top: 10px; right: 25px; }
-.pattern-dot:nth-child(3) { top: 10px; right: 40px; }
-.pattern-dot:nth-child(4) { top: 25px; right: 10px; }
-.pattern-dot:nth-child(5) { top: 25px; right: 25px; }
-.pattern-dot:nth-child(6) { top: 25px; right: 40px; }
-.pattern-dot:nth-child(7) { top: 40px; right: 10px; }
-.pattern-dot:nth-child(8) { top: 40px; right: 25px; }
-.pattern-dot:nth-child(9) { top: 40px; right: 40px; }
-.pattern-dot:nth-child(10) { top: 55px; right: 10px; }
-.pattern-dot:nth-child(11) { top: 55px; right: 25px; }
-.pattern-dot:nth-child(12) { top: 55px; right: 40px; }
-
-/* 响应式设计 */
 @media (max-width: 768px) {
+  .quick-actions-section {
+    padding: 8px 16px 24px;
+  }
+  
   .actions-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
   
   .action-card {
-    height: 180px;
-  }
-  
-  .card-background {
     padding: 20px;
-  }
-  
-  .action-icon {
-    font-size: 2.5rem;
-  }
-  
-  .action-title {
-    font-size: 1.2rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .section-header h2 {
-    font-size: 1.6rem;
-  }
-  
-  .action-card {
-    height: 160px;
-  }
-  
-  .card-background {
-    padding: 16px;
-  }
-  
-  .action-icon {
-    font-size: 2rem;
-    margin-bottom: 8px;
-  }
-  
-  .action-title {
-    font-size: 1.1rem;
-  }
-  
-  .action-description {
-    font-size: 0.85rem;
   }
 }
 </style>

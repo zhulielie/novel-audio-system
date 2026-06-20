@@ -20,4 +20,9 @@ app.use(createPinia())
 app.use(router)
 app.use(ElementPlus)
 
+// 在Pinia初始化后执行store初始化
+import { useAppStore } from '@/stores/app'
+const appStore = useAppStore()
+appStore.initSettings()
+
 app.mount('#app')

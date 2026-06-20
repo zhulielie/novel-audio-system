@@ -1,0 +1,83 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Django
+*.sqlite3
+db_new.sqlite3
+*.log
+local_settings.py
+.env
+.venv
+venv/
+ENV/
+env/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Vue / Vite
+frontend/dist/
+frontend/.vite/
+*.local
+
+# Media and generated files
+backend/media/
+backend/staticfiles/
+backend/audios/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Demo temporary files
+demo_*.png
+demo_e2e_test.py
+demo_screenshot_*.png
+webbridge_screens/
+
+# Temporary / scratch files
+nul
+*.tmp
+*.bak
+response_*.json
+weight.json
+curl --request POST.txt
+httpslive.*.txt
+frontend/test.html
+
+# Large project directories not part of core demo
+Audacity/
+extracted_code/
+story/
+tts_benchmark/

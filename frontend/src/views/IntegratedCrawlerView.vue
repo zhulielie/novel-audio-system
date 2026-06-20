@@ -3,7 +3,7 @@
     <el-card class="crawler-card">
       <template #header>
         <div class="card-header">
-          <span>🚀 整合爬虫系统</span>
+          <span>🚀 粘贴和图书 URL，一键下载章节</span>
           <el-tag type="success" size="small">支持去水印</el-tag>
         </div>
       </template>
@@ -135,7 +135,27 @@
             :disabled="!isValidRange"
           >
             <el-icon><Download /></el-icon>
-            一键导入到数据库
+            导入并生成有声书
+          </el-button>
+        </div>
+        
+        <!-- Demo fallback：目录提取失败时仍可一键导入 -->
+        <div v-if="!catalogData && crawlerForm.sourceUrl" class="action-buttons fallback-buttons" style="margin-top: 10px;">
+          <el-alert
+            title="若和图书被 Cloudflare 拦截，可点击下方按钮使用本地示例数据继续体验"
+            type="info"
+            :closable="false"
+            show-icon
+            style="margin-bottom: 16px;"
+          />
+          <el-button
+            type="warning"
+            size="large"
+            @click="quickCrawl"
+            :loading="quickCrawling"
+          >
+            <el-icon><Download /></el-icon>
+            直接体验 Demo 导入（1-5 章）
           </el-button>
         </div>
       </div>
@@ -216,16 +236,11 @@
         >
           <template #extra>
             <el-descriptions :column="2" size="small">
-              <el-descriptions-item label="下载章节">
-                {{ downloadResult.downloaded_chapters }}/{{ downloadResult.total_chapters }}
+              <el-descriptions-item label="导入章节">
+                {{ downloadResult.imported_chapters || downloadResult.downloaded_chapters || 0 }}
               </el-descriptions-item>
-              <el-descriptions-item label="失败章节">
-                {{ downloadResult.failed_chapters || 0 }}
-              </el-descriptions-item>
-              <el-descriptions-item v-if="downloadResult.novel_id" label="小说ID">
-                <el-link :href="`/novels/${downloadResult.novel_id}`" type="primary">
-                  {{ downloadResult.novel_id }}
-                </el-link>
+              <el-descriptions-item v-if="downloadResult.novel_id" label="小说">
+                {{ downloadResult.novel_title || downloadResult.novel_id }}
               </el-descriptions-item>
               <el-descriptions-item v-if="downloadResult.watermark_removed !== undefined" label="去水印">
                 <el-tag :type="downloadResult.watermark_removed ? 'success' : 'info'">
@@ -233,6 +248,21 @@
                 </el-tag>
               </el-descriptions-item>
             </el-descriptions>
+            <el-alert
+              v-if="downloadResult.use_local_fallback"
+              title="和图书当前有 Cloudflare 保护，已自动使用 Demo 本地示例数据完成导入"
+              type="warning"
+              :closable="false"
+              show-icon
+              style="margin-top: 16px;"
+            />
+            <div v-if="downloadResult.novel_id" style="margin-top: 16px; text-align: center;">
+              <el-button type="warning" size="large" @click="goToTTS(downloadResult.novel_id)">
+                <el-icon><Headset /></el-icon>
+                下一步：生成 MP3 有声书
+                <el-icon><ArrowRight /></el-icon>
+              </el-button>
+            </div>
           </template>
         </el-result>
       </div>
@@ -290,9 +320,12 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Download, Check, Close, Refresh } from '@element-plus/icons-vue'
+import { Download, Check, Close, Refresh, Headset, ArrowRight } from '@element-plus/icons-vue'
 import axios from 'axios'
+
+const router = useRouter()
 
 // 响应式数据
 const crawlerForm = reactive({
@@ -409,14 +442,20 @@ const downloadChapters = async () => {
 }
 
 const quickCrawl = async () => {
-  if (!catalogData.value || !isValidRange.value) {
-    ElMessage.warning('请先提取目录并设置有效的章节范围')
+  if (!crawlerForm.sourceUrl) {
+    ElMessage.warning('请输入小说链接')
     return
   }
   
+  // 允许在未提取目录时直接调用 quick-crawl（后端会处理本地 fallback）
+  const start = catalogData.value ? crawlerForm.startChapter : 1
+  const end = catalogData.value ? crawlerForm.endChapter : 5
+  
   try {
     await ElMessageBox.confirm(
-      `确定要一键导入《${crawlerForm.novelTitle}》的第 ${crawlerForm.startChapter}-${crawlerForm.endChapter} 章到数据库吗？`,
+      catalogData.value
+        ? `确定要一键导入《${crawlerForm.novelTitle}》的第 ${start}-${end} 章到数据库吗？`
+        : '将使用本地示例数据直接导入《国医高手》第 1-5 章，继续吗？',
       '确认导入',
       {
         confirmButtonText: '确定导入',
@@ -435,8 +474,8 @@ const quickCrawl = async () => {
   try {
     const response = await axios.post('/api/crawler/quick-crawl/', {
       source_url: crawlerForm.sourceUrl,
-      start_chapter: crawlerForm.startChapter,
-      end_chapter: crawlerForm.endChapter,
+      start_chapter: start,
+      end_chapter: end,
       remove_watermark: crawlerForm.removeWatermark,
       novel_title: crawlerForm.novelTitle,
       novel_author: crawlerForm.novelAuthor
@@ -510,6 +549,13 @@ const setQuickRange = (start, end) => {
   const maxChapters = catalogData.value?.chapters?.length || 0
   crawlerForm.startChapter = start
   crawlerForm.endChapter = Math.min(end, maxChapters)
+}
+
+const goToTTS = (novelId) => {
+  router.push({
+    path: '/tts/synthesize',
+    query: { novel_id: novelId }
+  })
 }
 
 // 辅助方法

@@ -2,7 +2,6 @@
 import { RouterView } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 
-// 初始化应用设置
 const appStore = useAppStore()
 </script>
 
@@ -32,7 +31,7 @@ const appStore = useAppStore()
   margin: 0;
 }
 
-/* 全局样式重置 */
+/* Global reset */
 * {
   margin: 0;
   padding: 0;
@@ -40,16 +39,16 @@ const appStore = useAppStore()
 }
 
 body {
-  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'PingFang SC',
+    'Hiragino Sans GB',
+    'Microsoft YaHei',
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
 }
-
-/* Element Plus 主题定制 */
-:root {
-  --el-color-primary: #409eff;
-  --el-color-primary-light-3: #79bbff;
-  --el-color-primary-light-5: #a0cfff;
-  --el-color-primary-light-7: #c6e2ff;
-  --el-color-primary-light-8: #d9ecff;
-  --el-color-primary-light-9: #ecf5ff;
-  --el-color-primary-dark-2: #337ecc;
-}</style>
+</style>

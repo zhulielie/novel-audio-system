@@ -151,13 +151,23 @@ class Character(models.Model):
     voice_style = models.CharField(max_length=50, blank=True, verbose_name='语音风格')
     avatar = models.ImageField(upload_to='characters/avatars/', blank=True, null=True, verbose_name='头像')
     is_main_character = models.BooleanField(default=False, verbose_name='是否主角')
+
+    # 新增：参考音频和 TTS 相关字段
+    reference_audio = models.FileField(upload_to='characters/voices/', blank=True, null=True,
+                                        verbose_name='参考音频')
+    tts_voice_id = models.CharField(max_length=200, blank=True, verbose_name='TTS 音色ID',
+                                     help_text='Edge TTS 等引擎的音色标识')
+    speaker_tag = models.CharField(max_length=50, blank=True, verbose_name='说话人标签',
+                                    help_text='剧本中使用的说话人标识，如 韩立、旁白')
+    is_narrator = models.BooleanField(default=False, verbose_name='是否旁白')
+
     created_at = models.DateTimeField(default=timezone.now, verbose_name='创建时间')
-    
+
     class Meta:
         verbose_name = '角色'
         verbose_name_plural = '角色'
         ordering = ['-is_main_character', 'name']
-    
+
     def __str__(self):
         return f'{self.novel.title} - {self.name}'
 

@@ -10,6 +10,7 @@ from novels import batch_download_api
 from audios.api_views import AudioProjectViewSet, GeneratedAudioViewSet
 from llms.api_views import LLMModelViewSet, LLMRequestViewSet
 from generators.api_views import WorkflowViewSet, TaskViewSet
+from tts.api_views import TTSEngineViewSet, VoiceAssetViewSet, TTSGenerationTaskViewSet, voxcpm_synthesize, voxcpm_outputs, voxcpm_output_file, voxcpm_references, voxcpm_reference_delete
 from .api_views import (
     CustomTokenObtainPairView,
     UserRegistrationView,
@@ -38,6 +39,9 @@ router.register(r'llm-models', LLMModelViewSet)
 router.register(r'llm-requests', LLMRequestViewSet)
 router.register(r'workflows', WorkflowViewSet)
 router.register(r'tasks', TaskViewSet)
+router.register(r'tts-engines', TTSEngineViewSet)
+router.register(r'tts-voices', VoiceAssetViewSet)
+router.register(r'tts-tasks', TTSGenerationTaskViewSet)
 
 # URL模式
 urlpatterns = [
@@ -75,6 +79,13 @@ urlpatterns = [
     path('novels/batch-download/<int:task_id>/pause/', batch_download_api.pause_task, name='pause_task'),
     path('novels/batch-download/<int:task_id>/resume/', batch_download_api.resume_task, name='resume_task'),
     path('novels/batch-download/<int:task_id>/cancel/', batch_download_api.cancel_task, name='cancel_task'),
+    
+    # VoxCPM 2.0 合成 API
+    path('tts/voxcpm/synthesize/', voxcpm_synthesize, name='voxcpm_synthesize'),
+    path('tts/voxcpm/outputs/', voxcpm_outputs, name='voxcpm_outputs'),
+    path('tts/voxcpm/outputs/<str:filename>/', voxcpm_output_file, name='voxcpm_output_file'),
+    path('tts/voxcpm/references/', voxcpm_references, name='voxcpm_references'),
+    path('tts/voxcpm/references/<str:filename>/', voxcpm_reference_delete, name='voxcpm_reference_delete'),
     
     # 包含路由器的URL
     path('', include(router.urls)),

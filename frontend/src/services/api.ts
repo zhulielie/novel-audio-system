@@ -3,7 +3,7 @@ import axios from 'axios'
 // 创建axios实例
 const api = axios.create({
   baseURL: 'http://localhost:8000/api/',
-  timeout: 10000,
+  timeout: 120000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -270,6 +270,48 @@ export const apiService = {
     // 获取统计信息
     stats: () => 
       api.get('/novels/batch-download/stats/'),
+  },
+
+  // TTS 语音合成相关API
+  tts: {
+    // 引擎管理
+    getEngines: (params?: any) => api.get('/tts-engines/', { params }),
+    getEngine: (id: number) => api.get(`/tts-engines/${id}/`),
+    createEngine: (data: any) => api.post('/tts-engines/', data),
+    updateEngine: (id: number, data: any) => api.put(`/tts-engines/${id}/`, data),
+    deleteEngine: (id: number) => api.delete(`/tts-engines/${id}/`),
+    testEngine: (id: number) => api.post(`/tts-engines/${id}/test_connection/`),
+    setDefaultEngine: (id: number) => api.post(`/tts-engines/${id}/set_default/`),
+    initDefaultEngines: () => api.post('/tts-engines/init_defaults/'),
+    getEngineTypes: () => api.get('/tts-engines/types/'),
+
+    // 语音资源管理
+    getVoices: (params?: any) => api.get('/tts-voices/', { params }),
+    getVoice: (id: number) => api.get(`/tts-voices/${id}/`),
+    createVoice: (data: any) => api.post('/tts-voices/', data),
+    updateVoice: (id: number, data: any) => api.put(`/tts-voices/${id}/`, data),
+    deleteVoice: (id: number) => api.delete(`/tts-voices/${id}/`),
+    importVoices: () => api.post('/tts-voices/import_from_media/'),
+    getVoiceTypes: () => api.get('/tts-voices/types/'),
+    assignCharacter: (voiceId: number, characterId: number) =>
+      api.post('/tts-voices/quick_assign_character/', { voice_id: voiceId, character_id: characterId }),
+
+    // 生成任务管理
+    getTasks: (params?: any) => api.get('/tts-tasks/', { params }),
+    getTask: (id: number) => api.get(`/tts-tasks/${id}/`),
+    createTask: (data: any) => api.post('/tts-tasks/create_and_start/', data),
+    cancelTask: (id: number) => api.post(`/tts-tasks/${id}/cancel/`),
+    retryTask: (id: number) => api.post(`/tts-tasks/${id}/retry/`),
+    getTaskProgress: (id: number) => api.get(`/tts-tasks/${id}/progress/`),
+    downloadTaskAudio: (id: number) => api.get(`/tts-tasks/${id}/download/`),
+    quickSynthesize: (data: any) => api.post('/tts-tasks/quick_synthesize/', data),
+    getStatistics: () => api.get('/tts-tasks/statistics/'),
+
+    // VoxCPM 2.0 调参 playground
+    voxcpm: {
+      synthesize: (data: { text: string; cfg_value?: number; inference_timesteps?: number; mode?: string; reference_audio?: string }) =>
+        api.post('/tts/voxcpm/synthesize/', data),
+    },
   },
 
   // 通用GET和POST方法

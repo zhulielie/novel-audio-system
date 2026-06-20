@@ -344,7 +344,7 @@ onMounted(() => {
                   </el-tag>
                 </div>
                 <div class="novel-stats">
-                  <span class="stat-item">{{ novel.chapter_count || 0 }} 章节</span>
+                  <span class="stat-item">{{ novel.chapters_count || 0 }} 章节</span>
                 </div>
               </div>
             </div>
@@ -476,10 +476,12 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 20px;
-  padding: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  border-radius: 8px;
+  margin-bottom: 24px;
+  padding: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 .header-content {
@@ -488,30 +490,23 @@ onMounted(() => {
 
 .page-title {
   font-size: 24px;
-  font-weight: 600;
-  color: #2c3e50;
-  margin: 0 0 8px 0;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 6px 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  letter-spacing: -0.02em;
 }
 
 .page-description {
   font-size: 14px;
-  color: #7f8c8d;
+  color: var(--text-muted);
   margin: 0;
 }
 
 .search-section {
-  margin-bottom: 20px;
-}
-
-.search-section .el-card {
-  border: 1px solid #e4e7ed;
-}
-
-.novels-list .el-card {
-  border: 1px solid #e4e7ed;
+  margin-bottom: 24px;
 }
 
 .list-content {
@@ -527,35 +522,36 @@ onMounted(() => {
 
 .novels-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
   gap: 20px;
 }
 
 .novel-card {
-  border: 1px solid #e4e7ed;
-  border-radius: 8px;
-  padding: 20px;
-  background: white;
-  transition: all 0.3s;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  background: var(--bg-card);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
 }
 
 .novel-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+  border-color: var(--primary-200);
 }
 
 .novel-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .novel-title {
   font-size: 18px;
-  font-weight: 600;
-  color: #2c3e50;
+  font-weight: 700;
+  color: var(--text-primary);
   flex: 1;
   margin-right: 12px;
   line-height: 1.4;
@@ -563,9 +559,9 @@ onMounted(() => {
 
 .novel-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity 0.2s;
 }
 
 .novel-card:hover .novel-actions {
@@ -575,31 +571,32 @@ onMounted(() => {
 .novel-meta {
   display: flex;
   gap: 16px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .meta-item {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: #7f8c8d;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
 .meta-item .el-icon {
   font-size: 14px;
+  color: var(--text-placeholder);
 }
 
 .novel-description {
   font-size: 14px;
-  color: #5a6c7d;
-  line-height: 1.5;
-  margin-bottom: 16px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 18px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: 42px;
+  min-height: 45px;
 }
 
 .novel-footer {
@@ -614,12 +611,9 @@ onMounted(() => {
 }
 
 .novel-stats {
-  font-size: 12px;
-  color: #7f8c8d;
-}
-
-.stat-item {
-  margin-left: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
 .dialog-footer {

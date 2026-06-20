@@ -1,27 +1,35 @@
 <template>
   <div class="hero-section">
-    <div class="hero-background">
-      <div class="hero-content">
-        <div class="hero-text">
-          <h1 class="hero-title">
-            <span class="icon">🎯</span>
-            智能小说管理系统
-          </h1>
-          <p class="hero-subtitle">您的专属小说数字化助手，让阅读更智能</p>
+    <div class="hero-content">
+      <div class="hero-text">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          系统运行正常
         </div>
+        <h1 class="hero-title">智能小说管理系统</h1>
+        <p class="hero-subtitle">您的专属小说数字化助手，让阅读、创作与音频生成更加智能高效</p>
         
-        <div class="live-stats">
-          <div class="stat-item" v-for="stat in stats" :key="stat.key">
-            <div class="stat-number">{{ stat.value }}</div>
-            <div class="stat-label">{{ stat.label }}</div>
-          </div>
+        <div class="hero-actions">
+          <el-button type="primary" size="large" @click="$router.push('/novels/list')">
+            浏览小说库
+          </el-button>
+          <el-button size="large" plain @click="$router.push('/integrated-crawler')">
+            开始爬取
+          </el-button>
         </div>
       </div>
       
-      <!-- 装饰性元素 -->
-      <div class="hero-decoration">
-        <div class="floating-element" v-for="n in 6" :key="n" :style="getFloatingStyle(n)">
-          {{ getFloatingIcon(n) }}
+      <div class="hero-stats">
+        <div class="stat-card" v-for="stat in stats" :key="stat.key">
+          <div class="stat-icon-wrapper" :class="stat.type">
+            <el-icon size="22">
+              <component :is="stat.icon" />
+            </el-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-number">{{ stat.value }}</div>
+            <div class="stat-label">{{ stat.label }}</div>
+          </div>
         </div>
       </div>
     </div>
@@ -29,243 +37,210 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import axios from 'axios'
+import { ref, onMounted } from 'vue'
+import { Reading, Document, Headset, CircleCheck } from '@element-plus/icons-vue'
+import { apiService } from '@/services/api'
 
-// 响应式数据
-const dashboardData = ref({
-  total_novels: 0,
-  total_chapters: 0,
-  today_downloads: 0,
-  crawler_success_today: 0
-})
-
-// 计算统计数据
-const stats = computed(() => [
-  {
-    key: 'novels',
-    value: dashboardData.value.total_novels,
-    label: '本小说'
-  },
-  {
-    key: 'chapters', 
-    value: dashboardData.value.total_chapters,
-    label: '个章节'
-  },
-  {
-    key: 'downloads',
-    value: dashboardData.value.today_downloads,
-    label: '今日下载'
-  },
-  {
-    key: 'success',
-    value: dashboardData.value.crawler_success_today,
-    label: '爬取成功'
-  }
+const stats = ref([
+  { key: 'novels', value: 0, label: '本小说', icon: 'Reading', type: 'primary' },
+  { key: 'chapters', value: 0, label: '个章节', icon: 'Document', type: 'success' },
+  { key: 'audio', value: 0, label: '已生成音频', icon: 'Headset', type: 'warning' },
+  { key: 'tts', value: 0, label: 'TTS 任务', icon: 'CircleCheck', type: 'info' }
 ])
 
-// 装饰元素样式
-const getFloatingStyle = (index) => {
-  const positions = [
-    { top: '10%', left: '10%', animationDelay: '0s' },
-    { top: '20%', right: '15%', animationDelay: '1s' },
-    { top: '60%', left: '5%', animationDelay: '2s' },
-    { top: '70%', right: '10%', animationDelay: '0.5s' },
-    { top: '30%', left: '80%', animationDelay: '1.5s' },
-    { top: '80%', left: '70%', animationDelay: '2.5s' }
-  ]
-  return positions[index - 1] || {}
-}
-
-const getFloatingIcon = (index) => {
-  const icons = ['📚', '🎵', '⚡', '🕷️', '📊', '🚀']
-  return icons[index - 1] || '✨'
-}
-
-// 获取首页数据
-const loadDashboardData = async () => {
+const loadStats = async () => {
   try {
-    // 暂时使用模拟数据，后面会添加真实API
-    dashboardData.value = {
-      total_novels: 47,
-      total_chapters: 2208,
-      today_downloads: 156,
-      crawler_success_today: 12
-    }
+    const response = await apiService.get('/dashboard/stats/')
+    const data = response?.stats || {}
+    stats.value[0].value = data.novels || 0
+    stats.value[1].value = data.chapters || 0
+    stats.value[2].value = data.completed_audios || 0
+    stats.value[3].value = data.tts_tasks || 0
   } catch (error) {
-    console.error('加载首页数据失败:', error)
+    console.warn('加载统计数据失败，使用默认值:', error)
+    stats.value[0].value = 0
+    stats.value[1].value = 0
+    stats.value[2].value = 0
+    stats.value[3].value = 0
   }
 }
 
 onMounted(() => {
-  loadDashboardData()
+  loadStats()
 })
 </script>
 
 <style scoped>
 .hero-section {
-  margin: -20px -20px 30px -20px;
-  position: relative;
-  overflow: hidden;
-}
-
-.hero-background {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-  position: relative;
-  padding: 60px 40px;
-  color: white;
-  min-height: 200px;
+  padding: 32px 24px 24px;
 }
 
 .hero-content {
+  max-width: 1400px;
+  margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 2;
+  gap: 48px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 40px 48px;
+  box-shadow: var(--shadow-sm);
 }
 
 .hero-text {
   flex: 1;
+  max-width: 560px;
 }
 
-.hero-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin: 0 0 16px 0;
-  display: flex;
+.hero-badge {
+  display: inline-flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--success-50);
+  color: var(--success-600);
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
 }
 
-.hero-title .icon {
-  font-size: 3rem;
+.badge-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success-500);
   animation: pulse 2s infinite;
 }
 
+.hero-title {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+}
+
 .hero-subtitle {
-  font-size: 1.2rem;
-  margin: 0;
-  opacity: 0.9;
-  font-weight: 300;
+  font-size: 16px;
+  color: var(--text-muted);
+  margin: 0 0 28px 0;
+  line-height: 1.6;
 }
 
-.live-stats {
+.hero-actions {
   display: flex;
-  gap: 40px;
-  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.stat-item {
-  text-align: center;
-  background: rgba(255, 255, 255, 0.1);
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  min-width: 360px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
   padding: 20px;
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-  min-width: 120px;
+  transition: all 0.2s ease;
 }
 
-.stat-item:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-5px);
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-icon-wrapper {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-icon-wrapper.primary {
+  background: var(--primary-50);
+  color: var(--primary-600);
+}
+
+.stat-icon-wrapper.success {
+  background: var(--success-50);
+  color: var(--success-600);
+}
+
+.stat-icon-wrapper.warning {
+  background: var(--warning-50);
+  color: var(--warning-600);
+}
+
+.stat-icon-wrapper.info {
+  background: var(--info-50);
+  color: var(--info-600);
 }
 
 .stat-number {
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-  color: #fff;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: 4px;
 }
 
 .stat-label {
-  font-size: 0.9rem;
-  opacity: 0.9;
-  font-weight: 400;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
-.hero-decoration {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.floating-element {
-  position: absolute;
-  font-size: 2rem;
-  opacity: 0.1;
-  animation: float 6s ease-in-out infinite;
-}
-
-/* 动画效果 */
 @keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
-@keyframes float {
-  0%, 100% { 
-    transform: translateY(0px) rotate(0deg);
-    opacity: 0.1;
-  }
-  50% { 
-    transform: translateY(-20px) rotate(180deg);
-    opacity: 0.3;
-  }
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .hero-content {
     flex-direction: column;
-    text-align: center;
-    gap: 30px;
+    align-items: flex-start;
+    padding: 32px;
   }
   
-  .hero-title {
-    font-size: 2rem;
-    justify-content: center;
-  }
-  
-  .live-stats {
-    justify-content: center;
-    gap: 20px;
-  }
-  
-  .stat-item {
-    min-width: 100px;
-    padding: 15px;
-  }
-  
-  .stat-number {
-    font-size: 1.8rem;
+  .hero-stats {
+    width: 100%;
+    min-width: auto;
   }
 }
 
-@media (max-width: 480px) {
-  .hero-background {
-    padding: 40px 20px;
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 20px 16px 16px;
+  }
+  
+  .hero-content {
+    padding: 24px;
   }
   
   .hero-title {
-    font-size: 1.8rem;
+    font-size: 28px;
   }
   
-  .hero-subtitle {
-    font-size: 1rem;
+  .hero-stats {
+    grid-template-columns: 1fr;
   }
   
-  .live-stats {
+  .hero-actions {
     flex-direction: column;
-    align-items: center;
+    width: 100%;
   }
 }
 </style>
