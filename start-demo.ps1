@@ -8,7 +8,7 @@
     2. django-q2 异步任务队列
     3. Vue3 + Vite 前端开发服务器（端口 5176，若被占用则自动递增）
 
-    默认账号：admin / admin123456
+    默认账号：admin / admin
 #>
 
 param(
@@ -36,7 +36,7 @@ Write-Host "  智能小说管理系统 - Demo 启动脚本" -ForegroundColor Cya
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "后端 API:  http://localhost:$BackendPort" -ForegroundColor Green
 Write-Host "前端页面:  http://localhost:$FrontendPort" -ForegroundColor Green
-Write-Host "默认账号:  admin / admin123456" -ForegroundColor Green
+Write-Host "默认账号:  admin / admin" -ForegroundColor Green
 Write-Host ""
 Write-Host "将打开 3 个终端窗口，请勿关闭。" -ForegroundColor Yellow
 Write-Host "按 Ctrl+C 可在对应窗口停止服务。" -ForegroundColor Yellow

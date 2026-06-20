@@ -97,7 +97,7 @@
         <div class="form-tips">
           <span>默认账号: admin</span>
           <span class="dot">·</span>
-          <span>默认密码: admin123456</span>
+          <span>默认密码: admin</span>
         </div>
       </div>
       
@@ -121,7 +121,7 @@ const userStore = useUserStore()
 
 const loginForm = reactive({
   username: 'admin',
-  password: 'admin123456'
+  password: 'admin'
 })
 
 const loginRules = {

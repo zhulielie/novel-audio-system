@@ -26,7 +26,7 @@
             </div>
             <div class="account-item">
               <span class="label">管理员:</span>
-              <code>admin / admin123456</code>
+              <code>admin / admin</code>
             </div>
           </div>
         </el-alert>

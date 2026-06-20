@@ -49,9 +49,9 @@ describe('useUserStore', () => {
     vi.mocked(systemApi.login).mockResolvedValue(mockResponse)
 
     const store = useUserStore()
-    const result = await store.login({ username: 'admin', password: 'admin123456' })
+    const result = await store.login({ username: 'admin', password: 'admin' })
 
-    expect(systemApi.login).toHaveBeenCalledWith({ username: 'admin', password: 'admin123456' })
+    expect(systemApi.login).toHaveBeenCalledWith({ username: 'admin', password: 'admin' })
     expect(result).toEqual(mockResponse)
     expect(store.token).toBe('access')
     expect(store.userInfo.username).toBe('admin')
