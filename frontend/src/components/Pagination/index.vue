@@ -89,7 +89,7 @@ const scrollTo = (element: any, duration: number) => {
   
   const animateScroll = () => {
     currentTime += increment
-    const val = Math.easeInOutQuad(currentTime, start, change, duration)
+    const val = easeInOutQuad(currentTime, start, change, duration)
     element.scrollTop = val
     if (currentTime < duration) {
       setTimeout(animateScroll, increment)
@@ -98,8 +98,8 @@ const scrollTo = (element: any, duration: number) => {
   animateScroll()
 }
 
-// Math.easeInOutQuad 缓动函数
-Math.easeInOutQuad = function (t: number, b: number, c: number, d: number) {
+// easeInOutQuad 缓动函数
+const easeInOutQuad = (t: number, b: number, c: number, d: number) => {
   t /= d / 2
   if (t < 1) {
     return c / 2 * t * t + b

@@ -7,6 +7,7 @@ export interface User {
   email?: string
   phone?: string
   password?: string
+  avatar?: string
   is_active?: boolean
   roles?: number[]
   roles_info?: Array<{

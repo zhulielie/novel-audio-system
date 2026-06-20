@@ -139,7 +139,7 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useRouter } from 'vue-router'
-import CrawlerService, { CrawlerStatus, UrlAnalysisResult } from '@/services/crawlerService'
+import CrawlerService, { type CrawlerStatus, type UrlAnalysisResult } from '@/services/crawlerService'
 
 const router = useRouter()
 
@@ -214,7 +214,7 @@ const analyzeUrl = async () => {
       addLog(`❌ URL分析失败: ${result.error}`, 'error')
       ElMessage.error(result.error || 'URL分析失败')
     }
-  } catch (error) {
+  } catch (error: any) {
     addLog(`❌ URL分析出错: ${error.message}`, 'error')
     ElMessage.error('URL分析出错')
   } finally {
@@ -246,7 +246,7 @@ const quickImport = async () => {
       addLog(`❌ 快速导入失败: ${result.error}`, 'error')
       ElMessage.error(result.error || '快速导入失败')
     }
-  } catch (error) {
+  } catch (error: any) {
     addLog(`❌ 快速导入出错: ${error.message}`, 'error')
     ElMessage.error('快速导入出错')
   } finally {
@@ -259,7 +259,7 @@ const gotoBatchImport = () => {
   // 如果有分析结果，传递给批量导入页面
   if (analysisResult.value?.success) {
     router.push({
-      name: 'BatchImport',
+      name: 'CrawlerBatch',
       query: {
         url: analysisForm.value.url,
         title: analysisResult.value.title,
@@ -267,7 +267,7 @@ const gotoBatchImport = () => {
       }
     })
   } else {
-    router.push({ name: 'BatchImport' })
+    router.push({ name: 'CrawlerBatch' })
   }
 }
 

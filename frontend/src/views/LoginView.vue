@@ -26,7 +26,7 @@
             </div>
             <div class="account-item">
               <span class="label">管理员:</span>
-              <code>admin / admin123</code>
+              <code>admin / admin123456</code>
             </div>
           </div>
         </el-alert>
@@ -84,22 +84,6 @@
           </el-button>
         </el-form-item>
       </el-form>
-
-      <!-- 功能特性 -->
-      <div class="features">
-        <div class="feature-item">
-          <el-icon size="20" color="#67c23a"><Microphone /></el-icon>
-          <span>高质量音频生成</span>
-        </div>
-        <div class="feature-item">
-          <el-icon size="20" color="#e6a23c"><Cpu /></el-icon>
-          <span>AI智能处理</span>
-        </div>
-        <div class="feature-item">
-          <el-icon size="20" color="#f56c6c"><Setting /></el-icon>
-          <span>项目管理</span>
-        </div>
-      </div>
 
       <!-- 功能特性 -->
       <div class="features">

@@ -201,7 +201,7 @@ const formRules = {
 }
 
 // 小说来源列表
-const novelSources = ref([])
+const novelSources = ref<any[]>([])
 
 // 检测到的小说信息
 const detectedInfo = ref({
@@ -215,8 +215,8 @@ const importing = ref(false)
 const analyzing = ref(false)
 const importProgress = ref(0)
 const importStatus = ref('')
-const importLog = ref([])
-const importResult = ref(null)
+const importLog = ref<any[]>([])
+const importResult = ref<any>(null)
 
 // 计算属性 - 是否可以导入
 const canImport = computed(() => {
@@ -228,7 +228,7 @@ const canImport = computed(() => {
 // 加载小说来源
 const loadNovelSources = async () => {
   try {
-    const response = await apiService.novelSources.list()
+    const response: any = await apiService.novelSources.list()
     novelSources.value = response.results || response.data || response
   } catch (error) {
     console.error('加载小说来源失败:', error)
@@ -262,7 +262,7 @@ const analyzeUrl = async () => {
   
   try {
     // 调用后端分析接口
-    const response = await apiService.novels.test_source({ url: importForm.value.novelUrl })
+    const response: any = await apiService.novels.test_source({ url: importForm.value.novelUrl })
     
     if (response.success) {
       detectedInfo.value = {
@@ -283,7 +283,7 @@ const analyzeUrl = async () => {
       addLog(`❌ URL分析失败: ${response.error}`, 'error')
       ElMessage.error('小说信息检测失败')
     }
-  } catch (error) {
+  } catch (error: any) {
     addLog(`❌ URL分析出错: ${error.message}`, 'error')
     ElMessage.error('分析出错')
   } finally {
@@ -293,7 +293,7 @@ const analyzeUrl = async () => {
 
 // 计算章节限制参数
 const getChapterLimits = () => {
-  const limits = {
+  const limits: Record<string, number | null> = {
     max_chapters: null,
     start_chapter: null,
     end_chapter: null
@@ -356,7 +356,7 @@ const startImport = async () => {
   
   try {
     // 调用后端测试批量导入API
-    const response = await apiService.post('/api/test-batch-import/', {
+    const response: any = await apiService.post('/api/test-batch-import/', {
       source_url: importForm.value.novelUrl,
       novel_title: detectedInfo.value.title,
       novel_author: detectedInfo.value.author,
@@ -387,7 +387,7 @@ const startImport = async () => {
       importResult.value = { success: false, error: response.data.error }
       ElMessage.error('导入失败')
     }
-  } catch (error) {
+  } catch (error: any) {
     importStatus.value = '出错'
     addLog(`❌ 导入出错: ${error.message}`, 'error')
     importResult.value = { success: false, error: error.message }

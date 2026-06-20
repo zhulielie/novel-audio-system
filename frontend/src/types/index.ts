@@ -26,7 +26,7 @@ export interface Novel {
   status?: string
   created_at: string
   updated_at: string
-  chapter_count?: number
+  chapters_count?: number
   sources?: number[]  // 关联的来源ID数组
 }
 
@@ -202,10 +202,12 @@ export interface NovelForm {
 }
 
 export interface ChapterForm {
-  novel: number
+  novel: number | string
   title: string
   content: string
-  chapter_number: number
+  chapter_number: number | string
+  chapter_sort_number?: number
+  is_published?: boolean
 }
 
 // 小说来源相关类型

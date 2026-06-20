@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Loading, Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { apiService } from '@/services/api'
-import type { Chapter, Novel } from '@/types'
+import type { Chapter, Novel, ChapterForm } from '@/types'
 
 const chapters = ref<Chapter[]>([])
 const novels = ref<Novel[]>([])
@@ -12,11 +12,11 @@ const dialogVisible = ref(false)
 const editingChapter = ref<Chapter | null>(null)
 
 // 表单数据
-const chapterForm = ref({
+const chapterForm = ref<ChapterForm>({
   novel: '',
   title: '',
   content: '',
-  chapter_number: '一',
+  chapter_number: 1,
   chapter_sort_number: 1,
   is_published: false
 })
@@ -75,7 +75,7 @@ const handleSubmit = async () => {
   try {
     const submitData = {
       ...chapterForm.value,
-      novel: parseInt(chapterForm.value.novel)
+      novel: parseInt(chapterForm.value.novel as string)
     }
     
     if (editingChapter.value) {

@@ -32,11 +32,14 @@ const directoryPageSize = ref(50)
 // 批量导入相关
 const batchImportVisible = ref(false)
 const batchImportLoading = ref(false)
-const batchImportForm = ref({
+const batchImportForm = ref<{
+  source_id: number | null
+  max_chapters: number
+}>({
   source_id: 1, // 默认选择和图书网 (ID: 1)
   max_chapters: 100
 })
-const availableSources = ref([])
+const availableSources = ref<any[]>([])
 
 // 测试对话框
 const testDialogVisible = ref(false)
@@ -238,10 +241,10 @@ const fetchAvailableSources = async () => {
     
     // Django REST framework分页响应结构：{count, next, previous, results}
     // 由于响应拦截器返回response.data，所以这里response就是分页数据
-    availableSources.value = response.results || response.data || response || []
+    availableSources.value = (response as any).results || (response as any).data || response || []
     console.log('解析后的小说来源:', availableSources.value)
     console.log('小说来源数量:', availableSources.value.length)
-  } catch (error) {
+  } catch (error: any) {
     console.error('获取小说来源失败:', error)
     ElMessage.error('获取小说来源失败: ' + (error.message || '未知错误'))
   }
@@ -279,10 +282,10 @@ const testDialog = () => {
       if (dialog.textContent?.includes('智能批量导入')) {
         console.log('  - *** 这是批量导入对话框 ***')
         if (wrapper) {
-          wrapper.style.display = 'flex'
-          wrapper.style.visibility = 'visible'
-          wrapper.style.opacity = '1'
-          wrapper.style.zIndex = '9999'
+          ;(wrapper as HTMLElement).style.display = 'flex'
+          ;(wrapper as HTMLElement).style.visibility = 'visible'
+          ;(wrapper as HTMLElement).style.opacity = '1'
+          ;(wrapper as HTMLElement).style.zIndex = '9999'
           console.log('  - 已强制修改样式')
         }
       }
@@ -322,10 +325,10 @@ const openBatchImportDialog = async () => {
     if (dialog) {
       const wrapper = dialog.closest('.el-dialog__wrapper') || dialog.parentElement
       if (wrapper) {
-        wrapper.style.display = 'flex'
-        wrapper.style.visibility = 'visible'
-        wrapper.style.opacity = '1'
-        wrapper.style.zIndex = '3000'
+        ;(wrapper as HTMLElement).style.display = 'flex'
+        ;(wrapper as HTMLElement).style.visibility = 'visible'
+        ;(wrapper as HTMLElement).style.opacity = '1'
+        ;(wrapper as HTMLElement).style.zIndex = '3000'
         console.log('已强制设置对话框样式')
       }
     }
@@ -355,7 +358,7 @@ const executeBatchImport = async () => {
     } else {
       ElMessage.error(result.message || '批量导入失败')
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('批量导入失败:', error)
     ElMessage.error('批量导入失败: ' + (error.response?.data?.message || error.message || '未知错误'))
   } finally {

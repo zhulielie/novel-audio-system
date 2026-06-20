@@ -74,13 +74,13 @@
             </div>
           </template>
           <div class="action-buttons">
-            <el-button type="primary" icon="Plus" @click="$router.push('/novels/list')">
+            <el-button type="primary" icon="Plus" @click="goToNovels">
               添加小说
             </el-button>
-            <el-button type="success" icon="Download" @click="$router.push('/crawler/batch')">
+            <el-button type="success" icon="Download" @click="goToBatch">
               批量下载
             </el-button>
-            <el-button type="info" icon="VideoPlay" @click="$router.push('/audio/projects')">
+            <el-button type="info" icon="VideoPlay" @click="goToAudio">
               音频项目
             </el-button>
           </div>
@@ -139,9 +139,16 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { Reading, Document, Operation, User, Plus, Download, VideoPlay, Bell } from '@element-plus/icons-vue'
 import { formatRelativeTime } from '@/utils/date'
 import { apiService } from '@/services/api'
+
+const router = useRouter()
+
+const goToNovels = () => router.push('/novels/list')
+const goToBatch = () => router.push('/crawler/batch')
+const goToAudio = () => router.push('/audio/projects')
 
 // 响应式数据
 const stats = ref({
@@ -180,8 +187,8 @@ const loadStats = async () => {
       apiService.chapters.list({ page_size: 1 })
     ])
     
-    stats.value.novels = novelsRes.count || 0
-    stats.value.chapters = chaptersRes.count || 0
+    stats.value.novels = (novelsRes as any).count || 0
+    stats.value.chapters = (chaptersRes as any).count || 0
     stats.value.tasks = 15 // 模拟数据
     stats.value.users = 3 // 模拟数据
   } catch (error) {
