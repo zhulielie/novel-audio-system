@@ -132,7 +132,25 @@ export const constantRoutes: RouteRecordRaw[] = [
       //     title: '来源管理',
       //     icon: 'Link'
       //   }
-      // }
+      // },
+      {
+        path: ':id',
+        name: 'NovelDetail',
+        component: () => import('@/views/NovelDetailView.vue'),
+        meta: {
+          title: '小说详情',
+          hidden: true
+        }
+      },
+      {
+        path: ':id/read',
+        name: 'NovelReader',
+        component: () => import('@/views/NovelReaderView.vue'),
+        meta: {
+          title: '阅读小说',
+          hidden: true
+        }
+      }
     ]
   },
   {
